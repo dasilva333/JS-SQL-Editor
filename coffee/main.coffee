@@ -1,4 +1,4 @@
-defaultColumns = 
+defaultColumns =
   "FirstName": "varchar"
   "EmployeeCount": "int"
   "LastUpdated": "datetime"
@@ -6,114 +6,143 @@ defaultColumns =
 String::singleQuoted = ->
   "'#{ this }'"
 
-class App
-  class Condition
-    startParen = ko.observable ""
-    columnName = ko.observable ""
-    operator = ko.observable ""
-    comparison = ko.observable ""
-    endParen = ko.observable ""
-    seperator = ko.observable ""
+class Condition
+  
+  constructor: (sp, name, op, comp, ep, sep) ->
+    @startParen = ko.observable sp || ""
+    @columnName = ko.observable name || ""
+    @operator = ko.observable op || ""
+    @comparison = ko.observable comp || ""
+    @endParen = ko.observable ep || ""
+    @seperator = ko.observable sep || ""
     
-    constructor: (sp, name, op, comp, ep, sep) ->
-      @setStartParen sp
-      @setColumnName name
-      @setOperator op
-      @setComparison comp
-      @setEndParen ep
-      @setSeperator sep || ""
-      
-    setStartParen: (parens) ->
-      startParen parens
-      
-    setColumnName: (name) ->
-      columnName name
-      
-    setOperator: (symbol) ->
-      operator symbol
+  setStartParen: (parens) ->
+    @startParen parens
     
-    setComparison: (value) ->
-      comparison value
-      
-    setEndParen: (parens) ->
-      endParen parens 
+  setColumnName: (name) ->
+    @columnName name
     
-    setSeperator: (bool) ->
-      seperator bool
-      
-    getStartParen: ->
-      startParen
+  setOperator: (symbol) ->
+    @operator symbol
+  
+  setComparison: (value) ->
+    @comparison value
+    
+  setEndParen: (parens) ->
+    @endParen parens
+  
+  setSeperator: (bool) ->
+    @seperator bool
+    
+  getStartParen: ->
+    @startParen
 
-    getColumnName: ->
-      columnName
+  getColumnName: ->
+    @columnName
 
-    getOperator: ->
-      operator
-    
-    ##Improve this bit   
-    getOperators: ->
-      ##if columnName().toString() != ""
-      ##  index = columns().toString().split(",").indexOf(columnName().toString())
-      ##  columns()[index].getTypes()
-      [ operator ]
-    getComparison: ->
-      comparison
+  getOperator: ->
+    @operator
+  
+  ##Improve this bit   
+  getOperators: ->
+    ##if columnName().toString() != ""
+    ##  index = columns().toString().split(",").indexOf(columnName().toString())
+    ##  columns()[index].getTypes()
+      [ @operator ]
+  getComparison: ->
+    @comparison
  
-    getEndParen: ->
-      endParen
+  getEndParen: ->
+    @endParen
    
-    getSeperator: ->
-      seperator   
+  getSeperator: ->
+    @seperator   
     
-    toString: () ->
-      " #{ startParen() } #{ columnName() } #{ operator() } #{ comparison().singleQuoted() } #{ endParen() } #{ seperator() } "
+  toString: () ->
+    " #{ @startParen() } #{ @columnName() } #{ @operator() } #{ @comparison().singleQuoted() } #{ @endParen() } #{ @seperator() } "
 
-  ##End of ConditionClass
-  
-  class Column
-   
-    viewName = ko.observable ""
-    dataType = ko.observable ""
-    columnTypes = 
-      "varchar": [ "<", ">", "=", "LIKE" ]
-      "int": ["=", ">"],
-      "datetime": [ "within the last", "equal to" ]
-      
-    constructor: (name,type) ->
-      viewName name
-      dataType type 
-    
-    getViewName: ->
-      viewName
-    
-    toString: ->
-      viewName()
-  
-    getTypes: ->
-      columnTypes[dataType()]
-      
-  ##End OF ColumnClass
+class Column
 
-  conditions = ko.observableArray()
-  columns = []
-      
+  columnTypes =
+    int: 
+      operators: [
+          "Contains Data": []
+          "Does Not Contain Data": []
+          "Equal To": [""]
+          "Greater Than": [""]
+          "Greater Than Or Equal To": [""]
+          "Less Than": [""]
+          "Less Than or Equal To": [""]
+          "Not Equal To !=": [""]
+      ]
+    varchar: 
+      operators: [
+          "Contains": [""]
+          "Contains Data": []
+          "Does Not Contain Data": []
+          "Ends With": [""]
+          "Equal To": [""]
+          "Greater Than": [""]
+          "Greater Than Or Equal To": [""]
+          "Less Than": [""]
+          "Less Than or Equal To": [""]
+          "Not Equal To !=": [""]
+          "Starts With": [""]
+      ]
+    datetime: 
+      operators: [ 
+        "After Next [Days]" : [""]
+        "Contains Data": []
+        "Days Equal": [""]
+        "Does Not Contain Data": []
+        "Equal To": ["","Today"]
+        "Months Equals [number]": [""]
+        "Not Equal To != ": [""]
+        "Older than [days]": [""]
+        "On or After": ["","Today"]
+        "On or Before": ["","Today"]
+        "Within Last [days]": [""]
+        "Within Next [days]": [""]
+        "Years Equals [number]": [""]
+      ]
+    bit: 
+      operators: [
+        "Equal To": ["True", "False"]
+      ]
+    
+  constructor: (name,type) ->
+    @viewName = ko.observable name
+    @dataType = ko.observable type
+  
+  getViewName: ->
+    @viewName
+  
+  toString: ->
+    @viewName()
+
+  getTypes: ->
+    columnTypes[dataType()]
+
+class App
+
   constructor: ->
-    for n,t of defaultColumns
-       columns.push new Column n,t
-    console.log columns.join ","
-    conditions.push new Condition "(", "FirstName", "=" ,"'richard'" , ")"
-    ko.setTemplateEngine new mustacheTemplateEngine();
+    @conditions = ko.observableArray()
+    @columns = ko.observableArray(new Column n,t for n,t of defaultColumns)
+    @addPlaceholder()
+    ko.setTemplateEngine new mustacheTemplateEngine()
 
   getConditions: ->
-    conditions
+    @conditions
   
   getColumns: ->
-    columns
+    @columns
   
   viewStatement: ->
-    conditions().join("")
+    @conditions().join("")
 
-
-$ -> 
+  addPlaceholder: =>
+    @conditions.push new Condition "(", "FirstName", "=" ,"'richard'" , ")"
+  
+$ ->
   window["Main"] = new App()
-  ##ko.applyBindings Main
+  ko.applyBindings Main
