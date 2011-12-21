@@ -39,12 +39,8 @@
 	  				<option value="(((">(((</option>
 	  			</select>
 	  		</td> 
-	  		<td>
-	  			<select data-bind="value: $data.getColumnName()">
-	  				<option value="">--Select--</option>	
-	  				<option value="ColumnName-1">ColumnName-1</option>
-	  				<option value="ColumnName-2">ColumnName-2</option>
-	  				<option value="ColumnName-3">ColumnName-3</option>
+	  		<td>  
+	  			<select data-bind="options: App.columns, optionsValue: function(a){ return a.getName() }, optionsText: function(b){ return b.getName() }, value: $data.getColumnName(), optionsCaption: '--Select--'">
 	  			</select>
 	  		</td> 
 	  		<td>

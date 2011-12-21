@@ -1,17 +1,43 @@
+(function() {
+  var defaultColumns;
+
+  defaultColumns = {
+    "ColumnName-1": "varchar",
+    "ColumnName-2": "int",
+    "ColumnName-3": "datetime"
+  };
 
   window.App = new function() {
-    var Condition, self;
+    var Column, Condition, self;
     self = this;
     this.conditions = ko.observableArray();
+    this.columns = ko.observableArray();
     this.load = function() {
-      self.conditions.push(new Condition("ColumnName-2", 1, 1, "=", "2"));
+      var name, type;
+      for (name in defaultColumns) {
+        type = defaultColumns[name];
+        self.columns.push(new Column(name, type));
+        console.log(self.columns()[0].toString());
+      }
+      self.conditions.push(new Condition("(", "ColumnName-2", "=", "2", ")"));
       ko.setTemplateEngine(new mustacheTemplateEngine());
       return ko.applyBindings(this);
     };
+    Column = function(name, type) {
+      var column, dataType, viewName;
+      column = this;
+      viewName = ko.observable(name);
+      dataType = ko.observable(type);
+      this.getName = function() {
+        return viewName;
+      };
+      this.toString = function() {
+        return viewName();
+      };
+      return column;
+    };
     Condition = (function() {
-      var C, columnName, comparison, endParen, operator, startParen;
-
-      C = Condition;
+      var columnName, comparison, endParen, operator, startParen;
 
       startParen = ko.observable("");
 
@@ -23,7 +49,7 @@
 
       endParen = ko.observable("");
 
-      function Condition(columnName, startParen, endParen, operator, comparison) {
+      function Condition(startParen, columnName, operator, comparison, endParen) {
         this.setColumnName(columnName);
         this.setStartParen(startParen);
         this.setEndParen(endParen);
@@ -31,34 +57,24 @@
         this.setComparison(comparison);
       }
 
-      Condition.prototype.setStartParen = function(amount) {
-        var paren, _results;
-        _results = [];
-        for (paren = 1; 1 <= amount ? paren <= amount : paren >= amount; 1 <= amount ? paren++ : paren--) {
-          _results.push(startParen += "(");
-        }
-        return _results;
+      Condition.prototype.setStartParen = function(parens) {
+        return startParen(parens);
       };
 
       Condition.prototype.setColumnName = function(name) {
-        return columnName = name;
+        return columnName(name);
       };
 
       Condition.prototype.setOperator = function(symbol) {
-        return operator = symbol;
+        return operator(symbol);
       };
 
       Condition.prototype.setComparison = function(value) {
-        return comparison = value;
+        return comparison(value);
       };
 
-      Condition.prototype.setEndParen = function(amount) {
-        var paren, _results;
-        _results = [];
-        for (paren = 1; 1 <= amount ? paren <= amount : paren >= amount; 1 <= amount ? paren++ : paren--) {
-          _results.push(endParen += ")");
-        }
-        return _results;
+      Condition.prototype.setEndParen = function(parens) {
+        return endParen(parens);
       };
 
       Condition.prototype.getStartParen = function() {
@@ -81,8 +97,8 @@
         return endParen;
       };
 
-      Condition.prototype.toString = function(meters) {
-        return "" + startParen + " " + columnName + " " + operator + " " + comparison + " " + endParen;
+      Condition.prototype.toString = function() {
+        return "" + (startParen()) + " " + (columnName()) + " " + (operator()) + " " + (comparison()) + " " + (endParen());
       };
 
       return Condition;
@@ -94,3 +110,5 @@
   $(function() {
     return App.load();
   });
+
+}).call(this);
