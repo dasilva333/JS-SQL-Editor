@@ -60,7 +60,9 @@
     };
 
     Condition.prototype.getOperators = function() {
-      return [this.operator];
+      var index;
+      index = Main.columns().toString().split(",").indexOf(this.columnName().toString());
+      return Main.columns()[index].getTypes();
     };
 
     Condition.prototype.getComparison = function() {
@@ -88,66 +90,50 @@
 
     columnTypes = {
       int: {
-        operators: [
-          {
-            "Contains Data": [],
-            "Does Not Contain Data": [],
-            "Equal To": [""],
-            "Greater Than": [""],
-            "Greater Than Or Equal To": [""],
-            "Less Than": [""],
-            "Less Than or Equal To": [""],
-            "Not Equal To !=": [""]
-          }
-        ]
+        "Contains Data": [],
+        "Does Not Contain Data": [],
+        "Equal To": [""],
+        "Greater Than": [""],
+        "Greater Than Or Equal To": [""],
+        "Less Than": [""],
+        "Less Than or Equal To": [""],
+        "Not Equal To !=": [""]
       },
       varchar: {
-        operators: [
-          {
-            "Contains": [""],
-            "Contains Data": [],
-            "Does Not Contain Data": [],
-            "Ends With": [""],
-            "Equal To": [""],
-            "Greater Than": [""],
-            "Greater Than Or Equal To": [""],
-            "Less Than": [""],
-            "Less Than or Equal To": [""],
-            "Not Equal To !=": [""],
-            "Starts With": [""]
-          }
-        ]
+        "Contains": [""],
+        "Contains Data": [],
+        "Does Not Contain Data": [],
+        "Ends With": [""],
+        "Equal To": [""],
+        "Greater Than": [""],
+        "Greater Than Or Equal To": [""],
+        "Less Than": [""],
+        "Less Than or Equal To": [""],
+        "Not Equal To !=": [""],
+        "Starts With": [""]
       },
       datetime: {
-        operators: [
-          {
-            "After Next [Days]": [""],
-            "Contains Data": [],
-            "Days Equal": [""],
-            "Does Not Contain Data": [],
-            "Equal To": ["", "Today"],
-            "Months Equals [number]": [""],
-            "Not Equal To != ": [""],
-            "Older than [days]": [""],
-            "On or After": ["", "Today"],
-            "On or Before": ["", "Today"],
-            "Within Last [days]": [""],
-            "Within Next [days]": [""],
-            "Years Equals [number]": [""]
-          }
-        ]
+        "After Next [Days]": [""],
+        "Contains Data": [],
+        "Days Equal": [""],
+        "Does Not Contain Data": [],
+        "Equal To": ["", "Today"],
+        "Months Equals [number]": [""],
+        "Not Equal To != ": [""],
+        "Older than [days]": [""],
+        "On or After": ["", "Today"],
+        "On or Before": ["", "Today"],
+        "Within Last [days]": [""],
+        "Within Next [days]": [""],
+        "Years Equals [number]": [""]
       },
       bit: {
-        operators: [
-          {
-            "Equal To": ["True", "False"]
-          }
-        ]
+        "Equal To": ["True", "False"]
       }
     };
 
     function Column(name, type) {
-      this.viewName = ko.observable(name);
+      this.getTypes = __bind(this.getTypes, this);      this.viewName = ko.observable(name);
       this.dataType = ko.observable(type);
     }
 
@@ -160,7 +146,12 @@
     };
 
     Column.prototype.getTypes = function() {
-      return columnTypes[dataType()];
+      var operator, _results;
+      _results = [];
+      for (operator in columnTypes[this.dataType()]) {
+        _results.push(operator);
+      }
+      return _results;
     };
 
     return Column;

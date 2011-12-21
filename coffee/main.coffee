@@ -45,10 +45,9 @@ class Condition
   
   ##Improve this bit   
   getOperators: ->
-    ##if columnName().toString() != ""
-    ##  index = columns().toString().split(",").indexOf(columnName().toString())
-    ##  columns()[index].getTypes()
-      [ @operator ]
+    index = Main.columns().toString().split(",").indexOf(@columnName().toString())
+    Main.columns()[index].getTypes()
+      
   getComparison: ->
     @comparison
  
@@ -64,51 +63,43 @@ class Condition
 class Column
 
   columnTypes =
-    int: 
-      operators: [
-          "Contains Data": []
-          "Does Not Contain Data": []
-          "Equal To": [""]
-          "Greater Than": [""]
-          "Greater Than Or Equal To": [""]
-          "Less Than": [""]
-          "Less Than or Equal To": [""]
-          "Not Equal To !=": [""]
-      ]
+    int:
+      "Contains Data": []
+      "Does Not Contain Data": []
+      "Equal To": [""]
+      "Greater Than": [""]
+      "Greater Than Or Equal To": [""]
+      "Less Than": [""]
+      "Less Than or Equal To": [""]
+      "Not Equal To !=": [""]
     varchar: 
-      operators: [
-          "Contains": [""]
-          "Contains Data": []
-          "Does Not Contain Data": []
-          "Ends With": [""]
-          "Equal To": [""]
-          "Greater Than": [""]
-          "Greater Than Or Equal To": [""]
-          "Less Than": [""]
-          "Less Than or Equal To": [""]
-          "Not Equal To !=": [""]
-          "Starts With": [""]
-      ]
-    datetime: 
-      operators: [ 
-        "After Next [Days]" : [""]
-        "Contains Data": []
-        "Days Equal": [""]
-        "Does Not Contain Data": []
-        "Equal To": ["","Today"]
-        "Months Equals [number]": [""]
-        "Not Equal To != ": [""]
-        "Older than [days]": [""]
-        "On or After": ["","Today"]
-        "On or Before": ["","Today"]
-        "Within Last [days]": [""]
-        "Within Next [days]": [""]
-        "Years Equals [number]": [""]
-      ]
+      "Contains": [""]
+      "Contains Data": []
+      "Does Not Contain Data": []
+      "Ends With": [""]
+      "Equal To": [""]
+      "Greater Than": [""]
+      "Greater Than Or Equal To": [""]
+      "Less Than": [""]
+      "Less Than or Equal To": [""]
+      "Not Equal To !=": [""]
+      "Starts With": [""]
+    datetime:  
+      "After Next [Days]" : [""]
+      "Contains Data": []
+      "Days Equal": [""]
+      "Does Not Contain Data": []
+      "Equal To": ["","Today"]
+      "Months Equals [number]": [""]
+      "Not Equal To != ": [""]
+      "Older than [days]": [""]
+      "On or After": ["","Today"]
+      "On or Before": ["","Today"]
+      "Within Last [days]": [""]
+      "Within Next [days]": [""]
+      "Years Equals [number]": [""]
     bit: 
-      operators: [
-        "Equal To": ["True", "False"]
-      ]
+      "Equal To": ["True", "False"]
     
   constructor: (name,type) ->
     @viewName = ko.observable name
@@ -120,9 +111,9 @@ class Column
   toString: ->
     @viewName()
 
-  getTypes: ->
-    columnTypes[dataType()]
-
+  getTypes: =>
+    operator for operator of columnTypes[ @dataType() ]
+    
 class App
 
   constructor: ->
