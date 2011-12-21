@@ -24,6 +24,7 @@
   <script src="js/main.js" type="text/javascript" charset="ISO-8859-1"></script>
   <style type="text/css">
   	table td, table th { text-align:center; }
+  	footer { border:2px solid black; padding:10px; margin-top:10px; }
   </style>
   
 </head>
@@ -40,39 +41,37 @@
 	  			</select>
 	  		</td> 
 	  		<td>  
-	  			<select data-bind="options: App.columns, optionsValue: function(a){ return a.getName() }, optionsText: function(b){ return b.getName() }, value: $data.getColumnName(), optionsCaption: '--Select--'">
+	  			<select data-bind="options: Main.getColumns(), optionsValue: function(a){ return a.getViewName() }, optionsText: function(b){ return b.getViewName() }, value: $data.getColumnName(), optionsCaption: '--Select--'">
 	  			</select>
 	  		</td> 
 	  		<td>
-	  			<select data-bind="value: $data.getOperator()">
-	  				<option value="=">=</option>
-	  				<option value=">"> &gt; </option>
-	  				<option value="<"> &lt; </option>
+	  			<select data-bind="value: $data.getOperator(), options: $data.getOperators(), optionsCaption: '--Select--'">
 	  			</select>
 	  		</td>
 	  		<td>
+				<input type="text" data-bind="value: $data.getComparison(), valueUpdate: 'keyup'">
+			</td>
+			<td>
 	  			<select data-bind="value: $data.getEndParen()">
 	  				<option value=")">)</option>
 	  				<option value="))">))</option>
 	  				<option value=")))">)))</option>
 	  			</select>
 			</td>
-	  		<td>
-				<select>
-					<option value="">--Select--</option>
+			<td>
+	  			<select data-bind="value: $data.getSeperator(), optionsCaption: '--Select--'">
+	  				<option value="">--Select--</option>
+	  				<option value="AND">AND</option>
+	  				<option value="OR">OR</option>
 	  			</select>
 			</td>
 	  		<td data-bind="text: $data.toString()"></td>
 	  	</tr>
-	</script>	
+	</script>	 
   <div>
     <header>
       <h1>index</h1>
     </header>
-    <nav>
-      <p><a href="/">Home</a></p>
-      <p><a href="/contact">Contact</a></p>
-    </nav>
 
     <div>
       <table cellpadding="3" cellspacing="0" border="0" width="100%">
@@ -81,19 +80,20 @@
 	      		<th>(</th> 
 	      		<th>Column</th> 
 	      		<th>Operator</th>
-	      		<th>)</th>
 	      		<th>Condition</th>
+	      		<th>)</th>
+	      		<th>Seperator</th>
 	      		<th>Statement</th>
 	      	</tr>
       	</tbody>
-      	<tbody data-bind="template: { name: 'conditionTemplate', foreach: conditions }">
+      	<tbody data-bind="template: { name: 'conditionTemplate', foreach: getConditions() }">
       		
       	</tbody>
       </table>
       
     </div>
 
-    <footer>
+    <footer data-bind="text: viewStatement()">
      	
     </footer>
   </div>

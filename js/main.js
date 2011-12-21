@@ -1,43 +1,21 @@
 (function() {
-  var defaultColumns;
+  var App, defaultColumns;
 
   defaultColumns = {
-    "ColumnName-1": "varchar",
-    "ColumnName-2": "int",
-    "ColumnName-3": "datetime"
+    "FirstName": "varchar",
+    "EmployeeCount": "int",
+    "LastUpdated": "datetime"
   };
 
-  window.App = new function() {
-    var Column, Condition, self;
-    self = this;
-    this.conditions = ko.observableArray();
-    this.columns = ko.observableArray();
-    this.load = function() {
-      var name, type;
-      for (name in defaultColumns) {
-        type = defaultColumns[name];
-        self.columns.push(new Column(name, type));
-        console.log(self.columns()[0].toString());
-      }
-      self.conditions.push(new Condition("(", "ColumnName-2", "=", "2", ")"));
-      ko.setTemplateEngine(new mustacheTemplateEngine());
-      return ko.applyBindings(this);
-    };
-    Column = function(name, type) {
-      var column, dataType, viewName;
-      column = this;
-      viewName = ko.observable(name);
-      dataType = ko.observable(type);
-      this.getName = function() {
-        return viewName;
-      };
-      this.toString = function() {
-        return viewName();
-      };
-      return column;
-    };
+  String.prototype.singleQuoted = function() {
+    return "'" + this + "'";
+  };
+
+  App = (function() {
+    var Column, Condition, columns, conditions;
+
     Condition = (function() {
-      var columnName, comparison, endParen, operator, startParen;
+      var columnName, comparison, endParen, operator, seperator, startParen;
 
       startParen = ko.observable("");
 
@@ -49,12 +27,15 @@
 
       endParen = ko.observable("");
 
-      function Condition(startParen, columnName, operator, comparison, endParen) {
-        this.setColumnName(columnName);
-        this.setStartParen(startParen);
-        this.setEndParen(endParen);
-        this.setOperator(operator);
-        this.setComparison(comparison);
+      seperator = ko.observable("");
+
+      function Condition(sp, name, op, comp, ep, sep) {
+        this.setStartParen(sp);
+        this.setColumnName(name);
+        this.setOperator(op);
+        this.setComparison(comp);
+        this.setEndParen(ep);
+        this.setSeperator(sep || "");
       }
 
       Condition.prototype.setStartParen = function(parens) {
@@ -77,6 +58,10 @@
         return endParen(parens);
       };
 
+      Condition.prototype.setSeperator = function(bool) {
+        return seperator(bool);
+      };
+
       Condition.prototype.getStartParen = function() {
         return startParen;
       };
@@ -89,6 +74,10 @@
         return operator;
       };
 
+      Condition.prototype.getOperators = function() {
+        return [operator];
+      };
+
       Condition.prototype.getComparison = function() {
         return comparison;
       };
@@ -97,18 +86,85 @@
         return endParen;
       };
 
+      Condition.prototype.getSeperator = function() {
+        return seperator;
+      };
+
       Condition.prototype.toString = function() {
-        return "" + (startParen()) + " " + (columnName()) + " " + (operator()) + " " + (comparison()) + " " + (endParen());
+        return " " + (startParen()) + " " + (columnName()) + " " + (operator()) + " " + (comparison().singleQuoted()) + " " + (endParen()) + " " + (seperator()) + " ";
       };
 
       return Condition;
 
     })();
-    return self;
-  };
+
+    Column = (function() {
+      var columnTypes, dataType, viewName;
+
+      viewName = ko.observable("");
+
+      dataType = ko.observable("");
+
+      columnTypes = {
+        "varchar": ["<", ">", "=", "LIKE"],
+        "int": ["=", ">"],
+        "datetime": ["within the last", "equal to"]
+      };
+
+      function Column(name, type) {
+        viewName(name);
+        dataType(type);
+      }
+
+      Column.prototype.getViewName = function() {
+        return viewName;
+      };
+
+      Column.prototype.toString = function() {
+        return viewName();
+      };
+
+      Column.prototype.getTypes = function() {
+        return columnTypes[dataType()];
+      };
+
+      return Column;
+
+    })();
+
+    conditions = ko.observableArray();
+
+    columns = [];
+
+    function App() {
+      var n, t;
+      for (n in defaultColumns) {
+        t = defaultColumns[n];
+        columns.push(new Column(n, t));
+      }
+      console.log(columns.join(","));
+      conditions.push(new Condition("(", "FirstName", "=", "'richard'", ")"));
+      ko.setTemplateEngine(new mustacheTemplateEngine());
+    }
+
+    App.prototype.getConditions = function() {
+      return conditions;
+    };
+
+    App.prototype.getColumns = function() {
+      return columns;
+    };
+
+    App.prototype.viewStatement = function() {
+      return conditions().join("");
+    };
+
+    return App;
+
+  })();
 
   $(function() {
-    return App.load();
+    return window["Main"] = new App();
   });
 
 }).call(this);

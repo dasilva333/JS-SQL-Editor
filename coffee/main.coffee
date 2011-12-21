@@ -1,53 +1,34 @@
-defaultColumns = {
-  "ColumnName-1":"varchar",
-  "ColumnName-2":"int",
-  "ColumnName-3":"datetime",
-}
-window.App = new ->
-  self = @; 
-  @conditions = ko.observableArray()
-  @columns = ko.observableArray()
-  @load = ->
-    for name, type of defaultColumns
-        self.columns.push new Column name,type
-        console.log self.columns()[0].toString() 
-    self.conditions.push new Condition "(", "ColumnName-2","=","2", ")";
-    ko.setTemplateEngine new mustacheTemplateEngine();
-    ko.applyBindings @
-  
-  Column = (name,type) ->
-    column = @;
-    viewName = ko.observable name
-    dataType = ko.observable type
-    
-    @getName = ->
-      viewName
-      
-    @toString = ->
-      viewName()
-        
-    column
-    
+defaultColumns = 
+  "FirstName": "varchar"
+  "EmployeeCount": "int"
+  "LastUpdated": "datetime"
+
+String::singleQuoted = ->
+  "'#{ this }'"
+
+class App
   class Condition
     startParen = ko.observable ""
     columnName = ko.observable ""
     operator = ko.observable ""
     comparison = ko.observable ""
     endParen = ko.observable ""
+    seperator = ko.observable ""
     
-    constructor: (startParen, columnName, operator, comparison, endParen) ->
-      @setColumnName columnName
-      @setStartParen startParen
-      @setEndParen endParen
-      @setOperator operator
-      @setComparison comparison
-    
+    constructor: (sp, name, op, comp, ep, sep) ->
+      @setStartParen sp
+      @setColumnName name
+      @setOperator op
+      @setComparison comp
+      @setEndParen ep
+      @setSeperator sep || ""
+      
     setStartParen: (parens) ->
       startParen parens
       
     setColumnName: (name) ->
       columnName name
-    
+      
     setOperator: (symbol) ->
       operator symbol
     
@@ -57,25 +38,82 @@ window.App = new ->
     setEndParen: (parens) ->
       endParen parens 
     
+    setSeperator: (bool) ->
+      seperator bool
+      
     getStartParen: ->
       startParen
 
     getColumnName: ->
       columnName
-          
+
     getOperator: ->
       operator
     
+    ##Improve this bit   
+    getOperators: ->
+      ##if columnName().toString() != ""
+      ##  index = columns().toString().split(",").indexOf(columnName().toString())
+      ##  columns()[index].getTypes()
+      [ operator ]
     getComparison: ->
       comparison
-      
+ 
     getEndParen: ->
       endParen
-      
-    toString: () ->
-      "#{ startParen() } #{ columnName() } #{ operator() } #{ comparison() } #{ endParen() }"
-   self
    
-$ -> App.load()
+    getSeperator: ->
+      seperator   
+    
+    toString: () ->
+      " #{ startParen() } #{ columnName() } #{ operator() } #{ comparison().singleQuoted() } #{ endParen() } #{ seperator() } "
+
+  ##End of ConditionClass
+  
+  class Column
+   
+    viewName = ko.observable ""
+    dataType = ko.observable ""
+    columnTypes = 
+      "varchar": [ "<", ">", "=", "LIKE" ]
+      "int": ["=", ">"],
+      "datetime": [ "within the last", "equal to" ]
+      
+    constructor: (name,type) ->
+      viewName name
+      dataType type 
+    
+    getViewName: ->
+      viewName
+    
+    toString: ->
+      viewName()
+  
+    getTypes: ->
+      columnTypes[dataType()]
+      
+  ##End OF ColumnClass
+
+  conditions = ko.observableArray()
+  columns = []
+      
+  constructor: ->
+    for n,t of defaultColumns
+       columns.push new Column n,t
+    console.log columns.join ","
+    conditions.push new Condition "(", "FirstName", "=" ,"'richard'" , ")"
+    ko.setTemplateEngine new mustacheTemplateEngine();
+
+  getConditions: ->
+    conditions
+  
+  getColumns: ->
+    columns
+  
+  viewStatement: ->
+    conditions().join("")
 
 
+$ -> 
+  window["Main"] = new App()
+  ##ko.applyBindings Main
