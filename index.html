@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+
+  <!-- Always force latest IE rendering engine (even in intranet) & Chrome Frame 
+       Remove this if you use the .htaccess -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+  <title>index</title>
+  <meta name="description" content="" />
+  <meta name="author" content="Richard" />
+
+  <meta name="viewport" content="width=device-width; initial-scale=1.0" />
+
+  <!-- Replace favicon.ico & apple-touch-icon.png in the root of your domain and delete these references -->
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.js" type="text/javascript" charset="ISO-8859-1"></script>
+  <script src="js/knockout-1.2.1.js" type="text/javascript" charset="ISO-8859-1"></script>
+  <script src="js/mustache.js" type="text/javascript" charset="ISO-8859-1"></script>
+  <script src="js/ko.mustache.js" type="text/javascript" charset="ISO-8859-1"></script> 
+  <!-- <script src="js/jquery.tmpl.min.js" type="text/javascript" charset="ISO-8859-1"></script>-->
+  <script src="js/main.js" type="text/javascript" charset="ISO-8859-1"></script>
+  <style type="text/css">
+  	table td, table th { text-align:center; }
+  </style>
+  
+</head>
+
+<body>
+	<script id="conditionTemplate" type="text/html">
+		<tr>
+	  		<td>
+	  			<select data-bind="value: $data.getStartParen()">
+	  				<option value="">--Select--</option>
+	  				<option value="(">(</option>
+	  				<option value="((">((</option>
+	  				<option value="(((">(((</option>
+	  			</select>
+	  		</td> 
+	  		<td>
+	  			<select data-bind="value: $data.getColumnName()">
+	  				<option value="">--Select--</option>	
+	  				<option value="ColumnName-1">ColumnName-1</option>
+	  				<option value="ColumnName-2">ColumnName-2</option>
+	  				<option value="ColumnName-3">ColumnName-3</option>
+	  			</select>
+	  		</td> 
+	  		<td>
+	  			<select data-bind="value: $data.getOperator()">
+	  				<option value="=">=</option>
+	  				<option value=">"> &gt; </option>
+	  				<option value="<"> &lt; </option>
+	  			</select>
+	  		</td>
+	  		<td>
+	  			<select data-bind="value: $data.getEndParen()">
+	  				<option value=")">)</option>
+	  				<option value="))">))</option>
+	  				<option value=")))">)))</option>
+	  			</select>
+			</td>
+	  		<td>
+				<select>
+					<option value="">--Select--</option>
+	  			</select>
+			</td>
+	  		<td data-bind="text: $data.toString()"></td>
+	  	</tr>
+	</script>	
+  <div>
+    <header>
+      <h1>index</h1>
+    </header>
+    <nav>
+      <p><a href="/">Home</a></p>
+      <p><a href="/contact">Contact</a></p>
+    </nav>
+
+    <div>
+      <table cellpadding="3" cellspacing="0" border="0" width="100%">
+      	<tbody>
+      		<tr>
+	      		<th>(</th> 
+	      		<th>Column</th> 
+	      		<th>Operator</th>
+	      		<th>)</th>
+	      		<th>Condition</th>
+	      		<th>Statement</th>
+	      	</tr>
+      	</tbody>
+      	<tbody data-bind="template: { name: 'conditionTemplate', foreach: conditions }">
+      		
+      	</tbody>
+      </table>
+      
+    </div>
+
+    <footer>
+     	
+    </footer>
+  </div>
+</body>
+</html>
