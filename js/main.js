@@ -1,15 +1,15 @@
 (function() {
-  var App, Column, Condition;
+  var App, Column, Condition, columnTypes, defaultColumns, operatorDefinitions;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  window.defaultColumns = {
+  defaultColumns = {
     "FirstName": "varchar",
     "EmployeeCount": "int",
     "LastUpdated": "datetime",
     "Active": "bit"
   };
 
-  window.columnTypes = {
+  columnTypes = {
     int: {
       "Contains Data": [],
       "Does Not Contain Data": [],
@@ -50,6 +50,37 @@
     },
     bit: {
       "Equal To": ["True", "False"]
+    }
+  };
+
+  operatorDefinitions = {
+    "After Next [Days]": function() {
+      return " DateAdd(d," + this.getColumnName + "," + this.getComparison + " ) ";
+    },
+    "Contains Data": " != ''  ",
+    "Days Equal": function() {
+      return " DAY( " + this.getColumnName + " ) = ";
+    },
+    "Does Not Contain Data": " = '' OR IS NULL ",
+    "Equal To": function() {
+      return " = " + this.getFormattedComparison;
+    },
+    "Months Equals [number]": function() {
+      return " MONTH( " + this.getColumnName + " ) = ";
+    },
+    "Not Equal To != ": function() {
+      return " != " + this.getComparison;
+    },
+    "Older than [days]": "",
+    "On or After": "",
+    "On or Before": "",
+    "Within Last [days]": "",
+    "Within Next [days]": "",
+    "Years Equals [number]": function() {
+      return " YEAR( " + this.getColumnName + " ) = ";
+    },
+    "Starts With": function() {
+      return " LIKE '" + this.getComparison + "%' ";
     }
   };
 
@@ -101,6 +132,7 @@
     };
 
     Condition.prototype.getOperator = function() {
+      console.log(operatorDefinitions[this.operator()].apply(this)());
       return this.operator;
     };
 
@@ -115,6 +147,14 @@
 
     Condition.prototype.getComparison = function() {
       return this.comparison;
+    };
+
+    Condition.prototype.getFormattedComparison = function() {
+      if (this.getDataType() === 'varchar') {
+        return this.comparison().singleQuoted();
+      } else {
+        return this.comparison();
+      }
     };
 
     Condition.prototype.getComparisons = function() {
@@ -138,7 +178,7 @@
     };
 
     Condition.prototype.toString = function() {
-      return " " + (this.startParen()) + " " + (this.columnName()) + " " + (this.operator()) + " " + (this.comparison().singleQuoted()) + " " + (this.endParen()) + " " + (this.seperator()) + " ";
+      return " " + (this.startParen()) + " " + (this.columnName()) + " " + (this.operator()) + " " + (this.getFormattedComparison()) + " " + (this.endParen()) + " " + (this.seperator()) + " ";
     };
 
     return Condition;

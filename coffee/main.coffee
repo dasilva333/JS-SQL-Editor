@@ -1,9 +1,10 @@
-window.defaultColumns =
+defaultColumns =
   "FirstName": "varchar"
   "EmployeeCount": "int"
   "LastUpdated": "datetime" 
   "Active": "bit"
-window.columnTypes =
+  
+columnTypes =
   int:
     "Contains Data": []
     "Does Not Contain Data": []
@@ -42,6 +43,21 @@ window.columnTypes =
   bit: 
     "Equal To": ["True", "False"]
 
+operatorDefinitions = 
+    "After Next [Days]": -> " DateAdd(d," + @getColumnName + "," + @getComparison + " ) "
+    "Contains Data": " != ''  "
+    "Days Equal": -> " DAY( " + @getColumnName + " ) = "
+    "Does Not Contain Data": " = '' OR IS NULL "
+    "Equal To": -> " = " + @getFormattedComparison
+    "Months Equals [number]": -> " MONTH( " + @getColumnName + " ) = "
+    "Not Equal To != ": -> " != " + @getComparison 
+    "Older than [days]": ""
+    "On or After": ""
+    "On or Before": ""
+    "Within Last [days]": ""
+    "Within Next [days]": ""
+    "Years Equals [number]": -> " YEAR( " + @getColumnName + " ) = "
+    "Starts With": -> " LIKE '" + @getComparison + "%' "
 String::singleQuoted = ->
   "'#{ this }'"
 
@@ -80,7 +96,9 @@ class Condition
     @columnName
 
   getOperator: ->
+    console.log operatorDefinitions[@operator()].apply(@)()
     @operator
+    
   
   getOperators: ->
     operator for operator of columnTypes[ @getDataType() ]
@@ -88,6 +106,12 @@ class Condition
   getComparison: ->
     @comparison
  
+  getFormattedComparison: ->
+    if (@getDataType() is 'varchar')
+      @comparison().singleQuoted()
+    else
+      @comparison()
+      
   getComparisons: ->
     columnTypes[ @getDataType() ][ @getOperator()() ]
     
@@ -104,7 +128,7 @@ class Condition
       @getComparisons().indexOf("") > -1
       
   toString: () ->
-    " #{ @startParen() } #{ @columnName() } #{ @operator() } #{ @comparison().singleQuoted() } #{ @endParen() } #{ @seperator() } "
+    " #{ @startParen() } #{ @columnName() } #{ @operator() } #{ @getFormattedComparison() } #{ @endParen() } #{ @seperator() } "
 
 class Column
 
