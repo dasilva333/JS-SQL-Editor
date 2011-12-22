@@ -1,6 +1,6 @@
 (function() {
-  var App, Column, Condition, columnTypes, defaultColumns, operatorDefinitions;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var App, Column, Condition, columnTypes, defaultColumns, operatorDefinitions,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   defaultColumns = {
     "FirstName": "varchar",
@@ -55,32 +55,46 @@
 
   operatorDefinitions = {
     "After Next [Days]": function() {
-      return " DateAdd(d," + this.getColumnName + "," + this.getComparison + " ) ";
+      return " DateAdd(d," + this.getComparison()() + "," + this.getColumnName()() + " ) > GetDate() ";
     },
-    "Contains Data": " != ''  ",
+    "Contains Data": function() {
+      return " <> '' OR IS NOT NULL  ";
+    },
     "Days Equal": function() {
-      return " DAY( " + this.getColumnName + " ) = ";
+      return " DAY( " + this.getColumnName()() + " ) = ";
     },
-    "Does Not Contain Data": " = '' OR IS NULL ",
+    "Does Not Contain Data": function() {
+      return " = '' OR IS NULL ";
+    },
     "Equal To": function() {
-      return " = " + this.getFormattedComparison;
+      return " = " + this.getFormattedComparison();
     },
     "Months Equals [number]": function() {
-      return " MONTH( " + this.getColumnName + " ) = ";
+      return " MONTH( " + this.getColumnName()() + " ) = ";
     },
     "Not Equal To != ": function() {
-      return " != " + this.getComparison;
+      return " != " + this.getComparison()();
     },
-    "Older than [days]": "",
-    "On or After": "",
-    "On or Before": "",
-    "Within Last [days]": "",
-    "Within Next [days]": "",
+    "Older than [days]": function() {
+      return "";
+    },
+    "On or After": function() {
+      return "";
+    },
+    "On or Before": function() {
+      return "";
+    },
+    "Within Last [days]": function() {
+      return "";
+    },
+    "Within Next [days]": function() {
+      return "";
+    },
     "Years Equals [number]": function() {
-      return " YEAR( " + this.getColumnName + " ) = ";
+      return " YEAR( " + this.getColumnName()() + " ) = YEAR( " + this.getComparison()() + " )";
     },
     "Starts With": function() {
-      return " LIKE '" + this.getComparison + "%' ";
+      return " LIKE '" + this.getComparison()() + "%' ";
     }
   };
 
@@ -132,7 +146,6 @@
     };
 
     Condition.prototype.getOperator = function() {
-      console.log(operatorDefinitions[this.operator()].apply(this)());
       return this.operator;
     };
 
@@ -150,8 +163,13 @@
     };
 
     Condition.prototype.getFormattedComparison = function() {
+      var _ref;
       if (this.getDataType() === 'varchar') {
         return this.comparison().singleQuoted();
+      } else if (this.getDataType() === 'bit') {
+        return (_ref = this.comparison() === "True") != null ? _ref : {
+          1: 0
+        };
       } else {
         return this.comparison();
       }
@@ -177,8 +195,13 @@
       return this.getComparisons().indexOf("") > -1;
     };
 
+    Condition.prototype.getOpAndComp = function() {
+      return operatorDefinitions[this.operator()].apply(this);
+    };
+
     Condition.prototype.toString = function() {
-      return " " + (this.startParen()) + " " + (this.columnName()) + " " + (this.operator()) + " " + (this.getFormattedComparison()) + " " + (this.endParen()) + " " + (this.seperator()) + " ";
+      console.log(exports.tokenize("SELECT * from tableName WHERE " + Main.viewStatement()).toString());
+      return " " + (this.startParen()) + " " + (this.columnName()) + " " + (this.getOpAndComp()) + " " + (this.endParen()) + " " + (this.seperator()) + " ";
     };
 
     return Condition;
@@ -245,7 +268,7 @@
     };
 
     App.prototype.addPlaceholder = function() {
-      return this.conditions.push(new Condition("(", "LastUpdated", "Equal To", "richard", ")"));
+      return this.conditions.push(new Condition("(", "FirstName", "Equal To", "richard", ")"));
     };
 
     return App;

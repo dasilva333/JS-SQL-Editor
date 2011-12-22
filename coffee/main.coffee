@@ -44,20 +44,21 @@ columnTypes =
     "Equal To": ["True", "False"]
 
 operatorDefinitions = 
-    "After Next [Days]": -> " DateAdd(d," + @getColumnName + "," + @getComparison + " ) "
-    "Contains Data": " != ''  "
-    "Days Equal": -> " DAY( " + @getColumnName + " ) = "
-    "Does Not Contain Data": " = '' OR IS NULL "
-    "Equal To": -> " = " + @getFormattedComparison
-    "Months Equals [number]": -> " MONTH( " + @getColumnName + " ) = "
-    "Not Equal To != ": -> " != " + @getComparison 
-    "Older than [days]": ""
-    "On or After": ""
-    "On or Before": ""
-    "Within Last [days]": ""
-    "Within Next [days]": ""
-    "Years Equals [number]": -> " YEAR( " + @getColumnName + " ) = "
-    "Starts With": -> " LIKE '" + @getComparison + "%' "
+    "After Next [Days]": -> " DateAdd(d," + @getComparison()() + "," + @getColumnName()() + " ) > GetDate() "
+    "Contains Data": -> " <> '' OR IS NOT NULL  "
+    "Days Equal": -> " DAY( " + @getColumnName()() + " ) = "
+    "Does Not Contain Data": -> " = '' OR IS NULL "
+    "Equal To": -> " = " + @getFormattedComparison()
+    "Months Equals [number]": -> " MONTH( " + @getColumnName()() + " ) = "
+    "Not Equal To != ": -> " != " + @getComparison()() 
+    "Older than [days]": -> ""
+    "On or After": -> ""
+    "On or Before": -> ""
+    "Within Last [days]": -> ""
+    "Within Next [days]": -> ""
+    "Years Equals [number]": -> " YEAR( " + @getColumnName()() + " ) = YEAR( " + @getComparison()() + " )"
+    "Starts With": -> " LIKE '" + @getComparison()() + "%' "
+    
 String::singleQuoted = ->
   "'#{ this }'"
 
@@ -96,9 +97,7 @@ class Condition
     @columnName
 
   getOperator: ->
-    console.log operatorDefinitions[@operator()].apply(@)()
     @operator
-    
   
   getOperators: ->
     operator for operator of columnTypes[ @getDataType() ]
@@ -109,6 +108,8 @@ class Condition
   getFormattedComparison: ->
     if (@getDataType() is 'varchar')
       @comparison().singleQuoted()
+    else if (@getDataType() is 'bit')
+      @comparison() is "True" ? 1 : 0;  
     else
       @comparison()
       
@@ -127,8 +128,12 @@ class Condition
   isOpenValue: ->
       @getComparisons().indexOf("") > -1
       
+  getOpAndComp: ->
+    operatorDefinitions[@operator()].apply(@)
+    
   toString: () ->
-    " #{ @startParen() } #{ @columnName() } #{ @operator() } #{ @getFormattedComparison() } #{ @endParen() } #{ @seperator() } "
+    console.log exports.tokenize("SELECT * from tableName WHERE " + Main.viewStatement() ).toString()
+    " #{ @startParen() } #{ @columnName() } #{ @getOpAndComp() } #{ @endParen() } #{ @seperator() } "
 
 class Column
 
@@ -163,9 +168,8 @@ class App
     @conditions().join("")
 
   addPlaceholder: =>
-    @conditions.push new Condition "(", "LastUpdated", "Equal To" ,"richard" , ")"
+    @conditions.push new Condition "(", "FirstName", "Equal To" ,"richard" , ")"
   
 $ ->
   window["Main"] = new App()
   ko.applyBindings Main
-  ##jQuery( "#combobox" ).combobox()
