@@ -1,7 +1,46 @@
-defaultColumns =
+window.defaultColumns =
   "FirstName": "varchar"
   "EmployeeCount": "int"
-  "LastUpdated": "datetime"
+  "LastUpdated": "datetime" 
+  "Active": "bit"
+window.columnTypes =
+  int:
+    "Contains Data": []
+    "Does Not Contain Data": []
+    "Equal To": [""]
+    "Greater Than": [""]
+    "Greater Than Or Equal To": [""]
+    "Less Than": [""]
+    "Less Than or Equal To": [""]
+    "Not Equal To !=": [""]
+  varchar: 
+    "Contains": [""]
+    "Contains Data": []
+    "Does Not Contain Data": []
+    "Ends With": [""]
+    "Equal To": [""]
+    "Greater Than": [""]
+    "Greater Than Or Equal To": [""]
+    "Less Than": [""]
+    "Less Than or Equal To": [""]
+    "Not Equal To !=": [""]
+    "Starts With": [""]
+  datetime:  
+    "After Next [Days]" : [""]
+    "Contains Data": []
+    "Days Equal": [""]
+    "Does Not Contain Data": []
+    "Equal To": ["","Today"]
+    "Months Equals [number]": [""]
+    "Not Equal To != ": [""]
+    "Older than [days]": [""]
+    "On or After": ["","Today"]
+    "On or Before": ["","Today"]
+    "Within Last [days]": [""]
+    "Within Next [days]": [""]
+    "Years Equals [number]": [""]
+  bit: 
+    "Equal To": ["True", "False"]
 
 String::singleQuoted = ->
   "'#{ this }'"
@@ -43,64 +82,32 @@ class Condition
   getOperator: ->
     @operator
   
-  ##Improve this bit   
   getOperators: ->
-    index = Main.columns().toString().split(",").indexOf(@columnName().toString())
-    Main.columns()[index].getTypes()
-      
+    operator for operator of columnTypes[ @getDataType() ]
+
   getComparison: ->
     @comparison
  
+  getComparisons: ->
+    columnTypes[ @getDataType() ][ @getOperator()() ]
+    
   getEndParen: ->
     @endParen
    
   getSeperator: ->
     @seperator   
-    
+  
+  getDataType: ->
+    defaultColumns[ @columnName() ]
+  
+  isOpenValue: ->
+      @getComparisons().indexOf("") > -1
+      
   toString: () ->
     " #{ @startParen() } #{ @columnName() } #{ @operator() } #{ @comparison().singleQuoted() } #{ @endParen() } #{ @seperator() } "
 
 class Column
 
-  columnTypes =
-    int:
-      "Contains Data": []
-      "Does Not Contain Data": []
-      "Equal To": [""]
-      "Greater Than": [""]
-      "Greater Than Or Equal To": [""]
-      "Less Than": [""]
-      "Less Than or Equal To": [""]
-      "Not Equal To !=": [""]
-    varchar: 
-      "Contains": [""]
-      "Contains Data": []
-      "Does Not Contain Data": []
-      "Ends With": [""]
-      "Equal To": [""]
-      "Greater Than": [""]
-      "Greater Than Or Equal To": [""]
-      "Less Than": [""]
-      "Less Than or Equal To": [""]
-      "Not Equal To !=": [""]
-      "Starts With": [""]
-    datetime:  
-      "After Next [Days]" : [""]
-      "Contains Data": []
-      "Days Equal": [""]
-      "Does Not Contain Data": []
-      "Equal To": ["","Today"]
-      "Months Equals [number]": [""]
-      "Not Equal To != ": [""]
-      "Older than [days]": [""]
-      "On or After": ["","Today"]
-      "On or Before": ["","Today"]
-      "Within Last [days]": [""]
-      "Within Next [days]": [""]
-      "Years Equals [number]": [""]
-    bit: 
-      "Equal To": ["True", "False"]
-    
   constructor: (name,type) ->
     @viewName = ko.observable name
     @dataType = ko.observable type
@@ -132,8 +139,9 @@ class App
     @conditions().join("")
 
   addPlaceholder: =>
-    @conditions.push new Condition "(", "FirstName", "=" ,"'richard'" , ")"
+    @conditions.push new Condition "(", "LastUpdated", "Equal To" ,"richard" , ")"
   
 $ ->
   window["Main"] = new App()
   ko.applyBindings Main
+  ##jQuery( "#combobox" ).combobox()

@@ -1,11 +1,56 @@
 (function() {
-  var App, Column, Condition, defaultColumns,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var App, Column, Condition;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  defaultColumns = {
+  window.defaultColumns = {
     "FirstName": "varchar",
     "EmployeeCount": "int",
-    "LastUpdated": "datetime"
+    "LastUpdated": "datetime",
+    "Active": "bit"
+  };
+
+  window.columnTypes = {
+    int: {
+      "Contains Data": [],
+      "Does Not Contain Data": [],
+      "Equal To": [""],
+      "Greater Than": [""],
+      "Greater Than Or Equal To": [""],
+      "Less Than": [""],
+      "Less Than or Equal To": [""],
+      "Not Equal To !=": [""]
+    },
+    varchar: {
+      "Contains": [""],
+      "Contains Data": [],
+      "Does Not Contain Data": [],
+      "Ends With": [""],
+      "Equal To": [""],
+      "Greater Than": [""],
+      "Greater Than Or Equal To": [""],
+      "Less Than": [""],
+      "Less Than or Equal To": [""],
+      "Not Equal To !=": [""],
+      "Starts With": [""]
+    },
+    datetime: {
+      "After Next [Days]": [""],
+      "Contains Data": [],
+      "Days Equal": [""],
+      "Does Not Contain Data": [],
+      "Equal To": ["", "Today"],
+      "Months Equals [number]": [""],
+      "Not Equal To != ": [""],
+      "Older than [days]": [""],
+      "On or After": ["", "Today"],
+      "On or Before": ["", "Today"],
+      "Within Last [days]": [""],
+      "Within Next [days]": [""],
+      "Years Equals [number]": [""]
+    },
+    bit: {
+      "Equal To": ["True", "False"]
+    }
   };
 
   String.prototype.singleQuoted = function() {
@@ -60,13 +105,20 @@
     };
 
     Condition.prototype.getOperators = function() {
-      var index;
-      index = Main.columns().toString().split(",").indexOf(this.columnName().toString());
-      return Main.columns()[index].getTypes();
+      var operator, _results;
+      _results = [];
+      for (operator in columnTypes[this.getDataType()]) {
+        _results.push(operator);
+      }
+      return _results;
     };
 
     Condition.prototype.getComparison = function() {
       return this.comparison;
+    };
+
+    Condition.prototype.getComparisons = function() {
+      return columnTypes[this.getDataType()][this.getOperator()()];
     };
 
     Condition.prototype.getEndParen = function() {
@@ -75,6 +127,14 @@
 
     Condition.prototype.getSeperator = function() {
       return this.seperator;
+    };
+
+    Condition.prototype.getDataType = function() {
+      return defaultColumns[this.columnName()];
+    };
+
+    Condition.prototype.isOpenValue = function() {
+      return this.getComparisons().indexOf("") > -1;
     };
 
     Condition.prototype.toString = function() {
@@ -86,51 +146,6 @@
   })();
 
   Column = (function() {
-    var columnTypes;
-
-    columnTypes = {
-      int: {
-        "Contains Data": [],
-        "Does Not Contain Data": [],
-        "Equal To": [""],
-        "Greater Than": [""],
-        "Greater Than Or Equal To": [""],
-        "Less Than": [""],
-        "Less Than or Equal To": [""],
-        "Not Equal To !=": [""]
-      },
-      varchar: {
-        "Contains": [""],
-        "Contains Data": [],
-        "Does Not Contain Data": [],
-        "Ends With": [""],
-        "Equal To": [""],
-        "Greater Than": [""],
-        "Greater Than Or Equal To": [""],
-        "Less Than": [""],
-        "Less Than or Equal To": [""],
-        "Not Equal To !=": [""],
-        "Starts With": [""]
-      },
-      datetime: {
-        "After Next [Days]": [""],
-        "Contains Data": [],
-        "Days Equal": [""],
-        "Does Not Contain Data": [],
-        "Equal To": ["", "Today"],
-        "Months Equals [number]": [""],
-        "Not Equal To != ": [""],
-        "Older than [days]": [""],
-        "On or After": ["", "Today"],
-        "On or Before": ["", "Today"],
-        "Within Last [days]": [""],
-        "Within Next [days]": [""],
-        "Years Equals [number]": [""]
-      },
-      bit: {
-        "Equal To": ["True", "False"]
-      }
-    };
 
     function Column(name, type) {
       this.getTypes = __bind(this.getTypes, this);      this.viewName = ko.observable(name);
@@ -190,7 +205,7 @@
     };
 
     App.prototype.addPlaceholder = function() {
-      return this.conditions.push(new Condition("(", "FirstName", "=", "'richard'", ")"));
+      return this.conditions.push(new Condition("(", "LastUpdated", "Equal To", "richard", ")"));
     };
 
     return App;

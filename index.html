@@ -17,18 +17,27 @@
   <link rel="shortcut icon" href="/favicon.ico" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.js" type="text/javascript" charset="ISO-8859-1"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js" type="text/javascript" charset="ISO-8859-1"></script>
   <script src="js/knockout-1.2.1.js" type="text/javascript" charset="ISO-8859-1"></script>
   <script src="js/mustache.js" type="text/javascript" charset="ISO-8859-1"></script>
   <script src="js/ko.mustache.js" type="text/javascript" charset="ISO-8859-1"></script> 
+  <script src="js/combobox.js" type="text/javascript" charset="ISO-8859-1"></script>
   <script src="js/main.js" type="text/javascript" charset="ISO-8859-1"></script>
+  
+  <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/start/jquery-ui.css" type="text/css" rel="Stylesheet" />
   <style type="text/css">
+  	body, * { font:"Lucida Console" 10px; margin:0; padding:0; }
   	table td, table th { text-align:center; }
   	footer { border:2px solid black; padding:10px; margin-top:10px; }
+	.ui-button { margin-left: -1px; font-size:10px; }
+	.ui-autocomplete-input { padding-top:10px; }
+	.ui-menu-item { width:200px; }	
   </style>
   
 </head>
 
-<body>
+<body> 
+
 	<script id="conditionTemplate" type="text/html">
 		<tr>
 	  		<td>
@@ -48,7 +57,9 @@
 	  			</select>
 	  		</td>
 	  		<td>
-				<input type="text" data-bind="value: $data.getComparison(), valueUpdate: 'keyup'">
+				<select data-bind="options: $data.getComparisons(), optionsText: function(item){ return item == '' ? 'Custom' : item }" id="combobox">
+	  			</select>
+	  			<input type="text" data-bind="value: $data.getComparison(), valueUpdate: 'keyup', visible: $data.isOpenValue()">
 			</td>
 			<td>
 	  			<select data-bind="value: $data.getEndParen()">
@@ -64,7 +75,7 @@
 	  				<option value="OR">OR</option>
 	  			</select>
 			</td>
-			<td data-bind="click: Main.addPlaceholder"><img src="/images/fileTypes/check.png"></td>
+			<td data-bind="click: Main.addPlaceholder"><img src="/images/fileTypes/check.png">Add</td>
 	  		<td data-bind="text: $data.toString()"></td>
 	  	</tr>
 	</script>	 
