@@ -1,6 +1,6 @@
 (function() {
-  var App, Column, Condition, columnTypes, defaultColumns, operatorDefinitions,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var App, Column, Condition, columnTypes, defaultColumns, operatorDefinitions;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   defaultColumns = {
     "FirstName": "varchar",
@@ -15,10 +15,10 @@
       "Does Not Contain Data": [],
       "Equal To": [""],
       "Greater Than": [""],
-      "Greater Than Or Equal To": [""],
+      "Greater Than or Equal To": [""],
       "Less Than": [""],
       "Less Than or Equal To": [""],
-      "Not Equal To !=": [""]
+      "Not Equal To": [""]
     },
     varchar: {
       "Contains": [""],
@@ -27,10 +27,10 @@
       "Ends With": [""],
       "Equal To": [""],
       "Greater Than": [""],
-      "Greater Than Or Equal To": [""],
+      "Greater Than or Equal To": [""],
       "Less Than": [""],
       "Less Than or Equal To": [""],
-      "Not Equal To !=": [""],
+      "Not Equal To": [""],
       "Starts With": [""]
     },
     datetime: {
@@ -40,7 +40,7 @@
       "Does Not Contain Data": [],
       "Equal To": ["", "Today"],
       "Months Equals [number]": [""],
-      "Not Equal To != ": [""],
+      "Not Equal To": [""],
       "Older than [days]": [""],
       "On or After": ["", "Today"],
       "On or Before": ["", "Today"],
@@ -58,7 +58,7 @@
       return " DateAdd(d," + this.getComparison()() + "," + this.getColumnName()() + " ) > GetDate() ";
     },
     "Contains Data": function() {
-      return " <> '' OR IS NOT NULL  ";
+      return " != '' OR IS NOT NULL  ";
     },
     "Days Equal": function() {
       return " DAY( " + this.getColumnName()() + " ) = ";
@@ -72,8 +72,8 @@
     "Months Equals [number]": function() {
       return " MONTH( " + this.getColumnName()() + " ) = ";
     },
-    "Not Equal To != ": function() {
-      return " != " + this.getComparison()();
+    "Not Equal To": function() {
+      return " != " + this.getFormattedComparison();
     },
     "Older than [days]": function() {
       return "";
@@ -95,6 +95,24 @@
     },
     "Starts With": function() {
       return " LIKE '" + this.getComparison()() + "%' ";
+    },
+    "Contains": function() {
+      return " LIKE '%" + this.getComparison()() + "%' ";
+    },
+    "Ends With": function() {
+      return " LIKE '%" + this.getComparison()() + "' ";
+    },
+    "Greater Than": function() {
+      return " > " + this.getComparison()();
+    },
+    "Less Than": function() {
+      return " < " + this.getComparison()();
+    },
+    "Greater Than or Equal To": function() {
+      return " => " + this.getComparison()();
+    },
+    "Less Than or Equal To": function() {
+      return " =< " + this.getComparison()();
     }
   };
 
@@ -179,20 +197,27 @@
       return columnTypes[this.getDataType()][this.getOperator()()];
     };
 
+    Condition.prototype.showPresetComparisons = function() {
+      true;      return this.getComparisons().length > 0;
+    };
+
+    Condition.prototype.showCustomComparisons = function() {
+      return this.getComparisons().indexOf("") > -1;
+    };
+
     Condition.prototype.getEndParen = function() {
       return this.endParen;
     };
 
     Condition.prototype.getSeperator = function() {
-      return this.seperator;
+      if (Main.getConditions()()[Main.getConditions()().length - 1] !== this && this.seperator() === "") {
+        this.seperator("AND");
+      }
+      return this.seperator();
     };
 
     Condition.prototype.getDataType = function() {
       return defaultColumns[this.columnName()];
-    };
-
-    Condition.prototype.isOpenValue = function() {
-      return this.getComparisons().indexOf("") > -1;
     };
 
     Condition.prototype.getOpAndComp = function() {
@@ -200,8 +225,7 @@
     };
 
     Condition.prototype.toString = function() {
-      console.log(exports.tokenize("SELECT * from tableName WHERE " + Main.viewStatement()).toString());
-      return " " + (this.startParen()) + " " + (this.columnName()) + " " + (this.getOpAndComp()) + " " + (this.endParen()) + " " + (this.seperator()) + " ";
+      return " " + (this.startParen()) + " " + (this.columnName()) + " " + (this.getOpAndComp()) + " " + (this.endParen()) + " " + (this.getSeperator()) + " ";
     };
 
     return Condition;

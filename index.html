@@ -21,10 +21,6 @@
   <script src="js/mustache.js" type="text/javascript" charset="ISO-8859-1"></script>
   <script src="js/ko.mustache.js" type="text/javascript" charset="ISO-8859-1"></script> 
   <script src="js/main.js" type="text/javascript" charset="ISO-8859-1"></script>
-  <script type="text/javascript" charset="ISO-8859-1">
-  	exports = {}
-  </script>
-  <script src="js/forward-sql-parser-58a7261/lib/lexer.js" type="text/javascript" charset="ISO-8859-1"></script>
   
   <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/start/jquery-ui.css" type="text/css" rel="Stylesheet" />
   <style type="text/css">
@@ -39,7 +35,8 @@
 </head>
 
 <body> 
-
+	<table id="cinput"></table> 
+	<div id="pcinput"></div>
 	<script id="conditionTemplate" type="text/html">
 		<tr>
 	  		<td>
@@ -59,9 +56,9 @@
 	  			</select>
 	  		</td>
 	  		<td>
-				<select data-bind="options: $data.getComparisons(), optionsText: function(item){ return item == '' ? 'Custom' : item }" id="combobox">
+				<select data-bind="valueUpdate: 'change', options: $data.getComparisons(), optionsText: function(item){ return item == '' ? 'Custom' : item }, disable: !$data.showPresetComparisons()">
 	  			</select>
-	  			<input type="text" data-bind="value: $data.getComparison(), valueUpdate: 'keyup', visible: $data.isOpenValue()">
+	  			<input type="text" data-bind="value: $data.getComparison(), valueUpdate: 'keyup', disable: !$data.showCustomComparisons()">
 			</td>
 			<td>
 	  			<select data-bind="value: $data.getEndParen()">

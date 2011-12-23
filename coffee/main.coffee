@@ -10,10 +10,10 @@ columnTypes =
     "Does Not Contain Data": []
     "Equal To": [""]
     "Greater Than": [""]
-    "Greater Than Or Equal To": [""]
+    "Greater Than or Equal To": [""]
     "Less Than": [""]
     "Less Than or Equal To": [""]
-    "Not Equal To !=": [""]
+    "Not Equal To": [""]
   varchar: 
     "Contains": [""]
     "Contains Data": []
@@ -21,10 +21,10 @@ columnTypes =
     "Ends With": [""]
     "Equal To": [""]
     "Greater Than": [""]
-    "Greater Than Or Equal To": [""]
+    "Greater Than or Equal To": [""]
     "Less Than": [""]
     "Less Than or Equal To": [""]
-    "Not Equal To !=": [""]
+    "Not Equal To": [""]
     "Starts With": [""]
   datetime:  
     "After Next [Days]" : [""]
@@ -33,7 +33,7 @@ columnTypes =
     "Does Not Contain Data": []
     "Equal To": ["","Today"]
     "Months Equals [number]": [""]
-    "Not Equal To != ": [""]
+    "Not Equal To": [""]
     "Older than [days]": [""]
     "On or After": ["","Today"]
     "On or Before": ["","Today"]
@@ -45,12 +45,12 @@ columnTypes =
 
 operatorDefinitions = 
     "After Next [Days]": -> " DateAdd(d," + @getComparison()() + "," + @getColumnName()() + " ) > GetDate() "
-    "Contains Data": -> " <> '' OR IS NOT NULL  "
+    "Contains Data": -> " != '' OR IS NOT NULL  "
     "Days Equal": -> " DAY( " + @getColumnName()() + " ) = "
     "Does Not Contain Data": -> " = '' OR IS NULL "
     "Equal To": -> " = " + @getFormattedComparison()
     "Months Equals [number]": -> " MONTH( " + @getColumnName()() + " ) = "
-    "Not Equal To != ": -> " != " + @getComparison()() 
+    "Not Equal To": -> " != " + @getFormattedComparison() 
     "Older than [days]": -> ""
     "On or After": -> ""
     "On or Before": -> ""
@@ -58,6 +58,12 @@ operatorDefinitions =
     "Within Next [days]": -> ""
     "Years Equals [number]": -> " YEAR( " + @getColumnName()() + " ) = YEAR( " + @getComparison()() + " )"
     "Starts With": -> " LIKE '" + @getComparison()() + "%' "
+    "Contains": -> " LIKE '%" + @getComparison()() + "%' "
+    "Ends With": -> " LIKE '%" + @getComparison()() + "' "
+    "Greater Than": -> " > " + @getComparison()()
+    "Less Than": -> " < " + @getComparison()()
+    "Greater Than or Equal To": -> " => " + @getComparison()()
+    "Less Than or Equal To": -> " =< " + @getComparison()()
     
 String::singleQuoted = ->
   "'#{ this }'"
@@ -115,25 +121,31 @@ class Condition
       
   getComparisons: ->
     columnTypes[ @getDataType() ][ @getOperator()() ]
+
+  showPresetComparisons: ->
+    true
+    ##console.log @getComparisons().indexOf("")
+    @getComparisons().length > 0
+  
+  showCustomComparisons: ->
+    @getComparisons().indexOf("") > -1
     
   getEndParen: ->
     @endParen
    
   getSeperator: ->
-    @seperator   
-  
+    if (Main.getConditions()()[Main.getConditions()().length - 1] isnt @ and @seperator() is "")
+      @seperator "AND"
+    @seperator()
+    
   getDataType: ->
     defaultColumns[ @columnName() ]
-  
-  isOpenValue: ->
-      @getComparisons().indexOf("") > -1
       
   getOpAndComp: ->
     operatorDefinitions[@operator()].apply(@)
     
   toString: () ->
-    console.log exports.tokenize("SELECT * from tableName WHERE " + Main.viewStatement() ).toString()
-    " #{ @startParen() } #{ @columnName() } #{ @getOpAndComp() } #{ @endParen() } #{ @seperator() } "
+    " #{ @startParen() } #{ @columnName() } #{ @getOpAndComp() } #{ @endParen() } #{ @getSeperator() } "
 
 class Column
 
