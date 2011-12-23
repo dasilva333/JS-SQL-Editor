@@ -70,13 +70,13 @@ String::singleQuoted = ->
 
 class Condition
   
-  constructor: (sp, name, op, comp, ep, sep) ->
-    @startParen = ko.observable sp || ""
-    @columnName = ko.observable name || ""
-    @operator = ko.observable op || ""
-    @comparison = ko.observable comp || ""
-    @endParen = ko.observable ep || ""
-    @seperator = ko.observable sep || ""
+  constructor: (params) ->
+    @startParen = ko.observable params['('] || ""
+    @columnName = ko.observable params['Column'] || ""
+    @operator = ko.observable params['Operator'] || ""
+    @comparison = ko.observable params['Comparison'] || ""
+    @endParen = ko.observable params[')'] || ""
+    @seperator = ko.observable params['Seperator'] || ""
     
   setStartParen: (parens) ->
     @startParen parens
@@ -123,8 +123,6 @@ class Condition
     columnTypes[ @getDataType() ][ @getOperator()() ]
 
   showPresetComparisons: ->
-    true
-    ##console.log @getComparisons().indexOf("")
     @getComparisons().length > 0
   
   showCustomComparisons: ->
@@ -157,7 +155,7 @@ class Column
     @viewName
   
   toString: ->
-    @viewName()
+    @viewName() + ":" + @viewName()
 
   getTypes: =>
     operator for operator of columnTypes[ @dataType() ]
@@ -165,23 +163,42 @@ class Column
 class App
 
   constructor: ->
-    @conditions = ko.observableArray()
+    @conditions = ko.observableArray(dataArr)
     @columns = ko.observableArray(new Column n,t for n,t of defaultColumns)
-    @addPlaceholder()
-    ko.setTemplateEngine new mustacheTemplateEngine()
-
+    @selectedCondition = ko.mapping.fromJS(emptyCondition)
+    
   getConditions: ->
     @conditions
   
   getColumns: ->
     @columns
   
+  getGridColumns: ->
+    @columns().join(";")
+    
   viewStatement: ->
     @conditions().join("")
 
   addPlaceholder: =>
     @conditions.push new Condition "(", "FirstName", "Equal To" ,"richard" , ")"
+    
+  operatorTemplate: =>
+    "<select>" + (@columns().map (o) -> ("<option>" + o.viewName() + "</option>")).join("") + "</select>"
   
+  getActiveOperators: ->
+    ["="]
+      
+  selectCondition: (selectedItem) =>
+    ko.mapping.fromJS( $.extend( new Condition(selectedItem), selectedItem ), @selectedCondition)
+  
+  add: ->
+      if (!@selectedCondition.ID())
+        newId = @conditions().length + 1;
+        @selectedCondition.ID(newId);
+        @conditions.push(ko.mapping.toJS(@selectedCondition));    
+      ko.mapping.fromJS(emptyCondition, @selectedCondition);  
+
 $ ->
   window["Main"] = new App()
   ko.applyBindings Main
+  

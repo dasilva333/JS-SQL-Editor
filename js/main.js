@@ -122,13 +122,13 @@
 
   Condition = (function() {
 
-    function Condition(sp, name, op, comp, ep, sep) {
-      this.startParen = ko.observable(sp || "");
-      this.columnName = ko.observable(name || "");
-      this.operator = ko.observable(op || "");
-      this.comparison = ko.observable(comp || "");
-      this.endParen = ko.observable(ep || "");
-      this.seperator = ko.observable(sep || "");
+    function Condition(params) {
+      this.startParen = ko.observable(params['('] || "");
+      this.columnName = ko.observable(params['Column'] || "");
+      this.operator = ko.observable(params['Operator'] || "");
+      this.comparison = ko.observable(params['Comparison'] || "");
+      this.endParen = ko.observable(params[')'] || "");
+      this.seperator = ko.observable(params['Seperator'] || "");
     }
 
     Condition.prototype.setStartParen = function(parens) {
@@ -198,7 +198,7 @@
     };
 
     Condition.prototype.showPresetComparisons = function() {
-      true;      return this.getComparisons().length > 0;
+      return this.getComparisons().length > 0;
     };
 
     Condition.prototype.showCustomComparisons = function() {
@@ -244,7 +244,7 @@
     };
 
     Column.prototype.toString = function() {
-      return this.viewName();
+      return this.viewName() + ":" + this.viewName();
     };
 
     Column.prototype.getTypes = function() {
@@ -263,9 +263,11 @@
   App = (function() {
 
     function App() {
+      this.selectCondition = __bind(this.selectCondition, this);
+      this.operatorTemplate = __bind(this.operatorTemplate, this);
       this.addPlaceholder = __bind(this.addPlaceholder, this);
       var n, t;
-      this.conditions = ko.observableArray();
+      this.conditions = ko.observableArray(dataArr);
       this.columns = ko.observableArray((function() {
         var _results;
         _results = [];
@@ -275,8 +277,7 @@
         }
         return _results;
       })());
-      this.addPlaceholder();
-      ko.setTemplateEngine(new mustacheTemplateEngine());
+      this.selectedCondition = ko.mapping.fromJS(emptyCondition);
     }
 
     App.prototype.getConditions = function() {
@@ -287,12 +288,40 @@
       return this.columns;
     };
 
+    App.prototype.getGridColumns = function() {
+      return this.columns().join(";");
+    };
+
     App.prototype.viewStatement = function() {
       return this.conditions().join("");
     };
 
     App.prototype.addPlaceholder = function() {
       return this.conditions.push(new Condition("(", "FirstName", "Equal To", "richard", ")"));
+    };
+
+    App.prototype.operatorTemplate = function() {
+      return "<select>" + (this.columns().map(function(o) {
+        return "<option>" + o.viewName() + "</option>";
+      })).join("") + "</select>";
+    };
+
+    App.prototype.getActiveOperators = function() {
+      return ["="];
+    };
+
+    App.prototype.selectCondition = function(selectedItem) {
+      return ko.mapping.fromJS($.extend(new Condition(selectedItem), selectedItem), this.selectedCondition);
+    };
+
+    App.prototype.add = function() {
+      var newId;
+      if (!this.selectedCondition.ID()) {
+        newId = this.conditions().length + 1;
+        this.selectedCondition.ID(newId);
+        this.conditions.push(ko.mapping.toJS(this.selectedCondition));
+      }
+      return ko.mapping.fromJS(emptyCondition, this.selectedCondition);
     };
 
     return App;

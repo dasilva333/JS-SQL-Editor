@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<title>jqGrid Demos</title>
+	<title>SQL Editor</title>
 	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.1/themes/redmond/jquery-ui.css" type="text/css" rel="Stylesheet" />
 	<link rel="stylesheet" type="text/css" media="screen" href="themes/ui.jqgrid.css" />
 	<link rel="stylesheet" type="text/css" media="screen" href="themes/ui.multiselect.css" />
@@ -10,6 +10,7 @@
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.js" type="text/javascript" charset="ISO-8859-1"></script>
 	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js" type="text/javascript" charset="ISO-8859-1"></script>
 	<script src="js/knockout-1.2.1.js" type="text/javascript"></script>
+	<script src="js/knockout.mapping.js" type="text/javascript"></script>
 	<script src="js/jquery.layout.js" type="text/javascript"></script>
 	<script src="js/grid.locale-en.js" type="text/javascript"></script>
 	<script type="text/javascript">
@@ -21,11 +22,34 @@
 	<script src="js/jquery.tablednd.js" type="text/javascript"></script>
 	<script src="js/jquery.contextmenu.js" type="text/javascript"></script>
 	<script src="js/main_grid.js" type="text/javascript"></script>
+	<script src="js/main.js" type="text/javascript"></script>
+	
 </head>
 <body>
 	<div id="container">
-  		<table id="cinput"></table> 
-  		<div id="pcinput"></div>
+		
+  	   <table id="conditionsGrid" data-bind="grid: { data: conditions,
+                                                	   selectItem: selectCondition,
+                                                  	   colModel: [
+                                                  	    { name: 'ID', index: 'ID', width: 15, sortable: true },
+													    { name: '(', index: '(', width: 30, editable: true, edittype:'select',editoptions:{value:'(:(;((:((;(((:((('} },
+													    { name: 'Column', index: 'Column', width: 200, editable: true, edittype:'select',editoptions:{value:getGridColumns() } },
+													    { name: 'Operator', index: 'Operator', width: 100, editable: true, edittype:'custom', editoptions: { custom_element: operatorTemplate, custom_value: getActiveOperators} },
+													    { name: 'Comparison', index: 'Comparison', width: 200, editable: true },
+													    { name: ')', index: ')', width: 30, editable: true, edittype:'select',editoptions:{value:'):);)):));))):)))'} },
+													    { name: 'Seperator', index: 'Seperator', width: 60, editable: true },
+													    { name: 'Statement', index: 'Statement', width: 400, editable: true }
+													   ],
+                                                 	   rowId: 'ID'
+                                                    }">
+    	</table>
+
+		<form data-bind="with: selectedCondition" style="margin-top:10px">
+			<input type="hidden" data-bind="value: ID"/> <br/>
+			Column:<input type="text" data-bind="value: Column"/>
+			Statement:<input type="text" data-bind="value: Statement"/>
+			<input type="button" value="Add" data-bind="click:$parent.add.bind($parent)"/>
+		</form>
   	</div>
 </body>
 </html>
