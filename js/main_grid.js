@@ -37,6 +37,7 @@
 						lastsel = id;
 					}
 				}, 
+				gridComplete: value.gridComplete,
 				onCellSelect: value.onCellSelect,
 				editurl: "grid.html",
 				caption: value.caption,

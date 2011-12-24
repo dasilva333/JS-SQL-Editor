@@ -210,7 +210,7 @@ class App
     @conditions = ko.observableArray(dataArr)
     @columns = ko.observableArray(new Column n,t for n,t of defaultColumns)
     @selectedCondition = new Condition(emptyCondition)
-    
+
   getConditions: ->
     @conditions
   
@@ -222,21 +222,22 @@ class App
     
   viewStatement: =>
     ko.computed =>
-      statement = @conditions().join("")
+      statement = "SELECT * FROM Contacts WHERE " + @conditions().join("")
       try
-        result = SQLParser.parse(statement).where.conditions
+        SQLParser.parse(statement).where.conditions
       catch error
-        result = error
-       
-      if (typeof result is "string")
-        $("#navPager_right").html(result)
-      else
-        $("#navPager_right").html(statement)
-        
+        statement = error + " " + statement
+
       statement  
   
+  gridComplete: ->
+    setTimeout( ->
+      ko.applyBindings Main, $("#navPager_right").parent().get 0
+    ,250)    
+    $("#navPager_right").html '<span data-bind="text: viewStatement()"></span>'
+  
   selectCondition: (selectedItem) =>
-    console.log(" blah ")
+    ## console.log(" blah ")
     ###
     if selectedItem.ID is "new_row"
       item = emptyCondition

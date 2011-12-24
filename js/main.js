@@ -343,24 +343,25 @@
     App.prototype.viewStatement = function() {
       var _this = this;
       return ko.computed(function() {
-        var result, statement;
-        statement = _this.conditions().join("");
+        var statement;
+        statement = "SELECT * FROM Contacts WHERE " + _this.conditions().join("");
         try {
-          result = SQLParser.parse(statement).where.conditions;
+          SQLParser.parse(statement).where.conditions;
         } catch (error) {
-          result = error;
-        }
-        if (typeof result === "string") {
-          $("#navPager_right").html(result);
-        } else {
-          $("#navPager_right").html(statement);
+          statement = error + " " + statement;
         }
         return statement;
       });
     };
 
+    App.prototype.gridComplete = function() {
+      setTimeout(function() {
+        return ko.applyBindings(Main, $("#navPager_right").parent().get(0));
+      }, 250);
+      return $("#navPager_right").html('<span data-bind="text: viewStatement()"></span>');
+    };
+
     App.prototype.selectCondition = function(selectedItem) {
-      console.log(" blah ");
       /*
           if selectedItem.ID is "new_row"
             item = emptyCondition
@@ -369,8 +370,7 @@
           item = $.extend( new Condition(item), item )  
           console.log(item)  
           ko.mapping.fromJS(item , @selectedCondition)
-      */
-      return this.selectedCondition = new Condition(selectedItem);
+      */      return this.selectedCondition = new Condition(selectedItem);
     };
 
     return App;
