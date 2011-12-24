@@ -126,7 +126,8 @@
 
     function Condition(params) {
       this.toString = __bind(this.toString, this);
-      this.getOpAndComp = __bind(this.getOpAndComp, this);      this.ID = params['ID'] || 0;
+      this.getOpAndComp = __bind(this.getOpAndComp, this);
+      this.setOperatorByEvent = __bind(this.setOperatorByEvent, this);      this.ID = params['ID'] || 0;
       this.startParen = ko.observable(params['('] || "");
       this['('] = params['('];
       this.columnName = ko.observable(params['Column'] || "");
@@ -152,7 +153,12 @@
     };
 
     Condition.prototype.setOperator = function(symbol) {
-      return this.operator(symbol);
+      this.operator(symbol);
+      return this.Operator = symbol;
+    };
+
+    Condition.prototype.setOperatorByEvent = function(event) {
+      return this.getOperator()($(event.target).val());
     };
 
     Condition.prototype.setComparison = function(value) {
@@ -189,16 +195,10 @@
     };
 
     Condition.prototype.operatorTemplate = function(value, options) {
-      var elemID;
-      elemID = options.id;
       setTimeout(function() {
-        return ko.applyBindings(Main, $("#" + elemID).get(0));
+        return ko.applyBindings(Main, $("#" + options.id).parent().get(0));
       }, 250);
-      return '<select data-bind="value: selectedCondition.getOperator()(), options: selectedCondition.getOperators(), optionsCaption: defaultCaption"></select>';
-    };
-
-    Condition.prototype.getElemValue = function(e) {
-      return $(e).val();
+      return '<select data-bind="value: selectedCondition.getOperator(), options: selectedCondition.getOperators(), optionsCaption: defaultCaption"></select>';
     };
 
     Condition.prototype.getComparison = function() {
@@ -224,6 +224,13 @@
 
     Condition.prototype.getComparisons = function() {
       return columnTypes[this.getDataType()][this.getOperator()()];
+    };
+
+    Condition.prototype.comparisonTemplate = function(value, options) {
+      setTimeout(function() {
+        return ko.applyBindings(Main, $("#" + options.id).parent().get(0));
+      }, 250);
+      return '<select data-bind="valueUpdate: \'change\', options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select><input type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()">';
     };
 
     Condition.prototype.showPresetComparisons = function() {
@@ -254,6 +261,13 @@
         x = operatorDefinitions[this.operator()].apply(this);
       }
       return x;
+    };
+
+    Condition.prototype.stringTemplate = function(value, options) {
+      setTimeout(function() {
+        return ko.applyBindings(Main, $("#" + options.id).parent().get(0));
+      }, 250);
+      return '<span data-bind="text: selectedCondition.toString()"></span>';
     };
 
     Condition.prototype.toString = function() {

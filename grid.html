@@ -53,16 +53,27 @@
 					name: 'Operator', index: 'Operator', width: 150, editable: true, edittype: 'custom', 
 					editoptions: { 
 						custom_element: selectedCondition.operatorTemplate, 
-						custom_value: selectedCondition.getElemValue, 
-						dataEvents: [
-							{ type: 'click', fn: function(e) { selectedCondition.setOperator(e.target.value); } }
-						]  
+						custom_value: selectedCondition.getOperator()
 					}  
 				},
-				{ name: 'Comparison', index: 'Comparison', width: 200, editable: true },
+				{ name: 'Comparison', index: 'Comparison', width: 200, editable: true, edittype: 'custom', 
+					editoptions: { 
+						custom_element: selectedCondition.comparisonTemplate, 
+						custom_value: selectedCondition.getComparison(), 
+						dataEvents: [
+							{ type: 'change', fn: function(e) { selectedCondition.setComparison(e.target.value); } }
+						]  
+					}   
+				
+				},
 				{ name: ')', index: ')', width: 30, editable: true, edittype:'select',editoptions:{value:'):);)):));))):)))'} },
 				{ name: 'Seperator', index: 'Seperator', width: 60, editable: true },
-				{ name: 'Statement', index: 'Statement', width: 400, editable: true }
+				{ name: 'Statement', index: 'Statement', width: 400, editable: true, edittype: 'custom', 
+					editoptions: { 
+						custom_element: selectedCondition.stringTemplate, 
+						custom_value: selectedCondition.toString()
+					}   
+				}
 			],
 			rowId: 'ID'
         }">

@@ -97,6 +97,10 @@ class Condition
     
   setOperator: (symbol) ->
     @operator symbol
+    @Operator = symbol
+  
+  setOperatorByEvent: (event) =>
+    @getOperator()($(event.target).val())
   
   setComparison: (value) ->
     @comparison value
@@ -120,15 +124,11 @@ class Condition
     operator for operator of columnTypes[ @getDataType() ]
 
   operatorTemplate: (value, options) ->
-    elemID = options.id;
     setTimeout( ->
-      ko.applyBindings(Main, $("#" + elemID).get(0))
+      ko.applyBindings(Main, $("#" + options.id).parent().get(0))
     ,250)
-    '<select data-bind="value: selectedCondition.getOperator()(), options: selectedCondition.getOperators(), optionsCaption: defaultCaption"></select>';
-    
-  getElemValue: (e) ->
-    $(e).val()
-
+    '<select data-bind="value: selectedCondition.getOperator(), options: selectedCondition.getOperators(), optionsCaption: defaultCaption"></select>';
+ 
   getComparison: ->
     @comparison
  
@@ -144,8 +144,15 @@ class Condition
     else
       x = @comparison()
     return x
+    
   getComparisons: ->
     columnTypes[ @getDataType() ][ @getOperator()() ]
+
+  comparisonTemplate: (value, options) ->
+    setTimeout( ->
+      ko.applyBindings(Main, $("#" + options.id).parent().get(0))
+    ,250)
+    '<select data-bind="valueUpdate: \'change\', options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select><input type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()">'
 
   showPresetComparisons: ->
     @getComparisons().length > 0
@@ -171,8 +178,14 @@ class Condition
     else  
       x = operatorDefinitions[@operator()].apply(@)
     x  
+  
+  stringTemplate: (value, options) ->
+    setTimeout( ->
+      ko.applyBindings(Main, $("#" + options.id).parent().get(0))
+    ,250)
+    '<span data-bind="text: selectedCondition.toString()"></span>'  
     
-  toString: () =>
+  toString: =>
     " #{ @startParen() } #{ @columnName() } #{ @getOpAndComp() } #{ @endParen() } #{ @getSeperator() } "
 
 class Column
