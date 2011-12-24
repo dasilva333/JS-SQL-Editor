@@ -37,11 +37,14 @@
 						lastsel = id;
 					}
 				}, 
-				afterEditCell:function (rowid, cellname, value, iRow, iCol){
-					console.log(arguments); 				   
-				},
+				onCellSelect: value.onCellSelect,
 				editurl: "grid.html",
-				caption: value.caption
+				caption: value.caption,
+				//disable paging
+				rowList: [],        // disable page size dropdown
+			    pgbuttons: false,     // disable page control like next, back button
+			    pgtext: null,         // disable pager text like 'Page 0 of 10'
+			    viewrecords: false    // disable current view record text like 'View 1-10 of 100' 
 			})
 			$(element).jqGrid("setGridParam", {
 				data: ko.utils.unwrapObservable(value.data).slice(0)

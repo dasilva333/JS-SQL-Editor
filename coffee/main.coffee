@@ -1,3 +1,5 @@
+window.defaultCaption = "--Select--"
+
 defaultColumns =
   "FirstName": "varchar"
   "EmployeeCount": "int"
@@ -122,8 +124,7 @@ class Condition
     setTimeout( ->
       ko.applyBindings(Main, $("#" + elemID).get(0))
     ,250)
-    '<select data-bind="value: selectedCondition.selectedOperator, options: selectedCondition.getOperators()"></select>';
-    ##'<select data-bind="value: selectedCondition.selectedOperator, options: selectedCondition.getOperators"></select>';
+    '<select data-bind="value: selectedCondition.getOperator()(), options: selectedCondition.getOperators(), optionsCaption: defaultCaption"></select>';
     
   getElemValue: (e) ->
     $(e).val()
@@ -165,9 +166,13 @@ class Condition
     defaultColumns[ @columnName() ]
       
   getOpAndComp: =>
-    @operator() is "" ? "" : operatorDefinitions[@operator()].apply(@)
+    if (@operator() is "")
+      x = ""
+    else  
+      x = operatorDefinitions[@operator()].apply(@)
+    x  
     
-  toString: () ->
+  toString: () =>
     " #{ @startParen() } #{ @columnName() } #{ @getOpAndComp() } #{ @endParen() } #{ @getSeperator() } "
 
 class Column
@@ -202,8 +207,20 @@ class App
   getGridColumns: ->
     @columns().join(";")
     
-  viewStatement: ->
-    @conditions().join("")
+  viewStatement: =>
+    ko.computed =>
+      statement = @conditions().join("")
+      try
+        result = SQLParser.parse(statement).where.conditions
+      catch error
+        result = error
+       
+      if (typeof result is "string")
+        $("#navPager_right").html(result)
+      else
+        $("#navPager_right").html(statement)
+        
+      statement  
   
   selectCondition: (selectedItem) =>
     console.log(" blah ")
@@ -243,7 +260,7 @@ dataArr = [
     "(": "(",
     "Column": "FirstName",
     "Operator": "Equal To",
-    "Value": "richard",
+    "Comparison": "richard",
     ")": ")",
     "Seperator": "OR",
     "Statement": "",
@@ -253,7 +270,7 @@ dataArr = [
     "(": "(",
     "Column": "Active",
     "Operator": "Equal To",
-    "Value": "1",
+    "Comparison": "1",
     ")": ")",
     "Seperator": "",
     "Statement": "",

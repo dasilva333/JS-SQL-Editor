@@ -2,6 +2,8 @@
   var App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
+  window.defaultCaption = "--Select--";
+
   defaultColumns = {
     "FirstName": "varchar",
     "EmployeeCount": "int",
@@ -123,6 +125,7 @@
   Condition = (function() {
 
     function Condition(params) {
+      this.toString = __bind(this.toString, this);
       this.getOpAndComp = __bind(this.getOpAndComp, this);      this.ID = params['ID'] || 0;
       this.startParen = ko.observable(params['('] || "");
       this['('] = params['('];
@@ -191,7 +194,7 @@
       setTimeout(function() {
         return ko.applyBindings(Main, $("#" + elemID).get(0));
       }, 250);
-      return '<select data-bind="value: selectedCondition.selectedOperator, options: selectedCondition.getOperators()"></select>';
+      return '<select data-bind="value: selectedCondition.getOperator()(), options: selectedCondition.getOperators(), optionsCaption: defaultCaption"></select>';
     };
 
     Condition.prototype.getElemValue = function(e) {
@@ -244,10 +247,13 @@
     };
 
     Condition.prototype.getOpAndComp = function() {
-      var _ref;
-      return (_ref = this.operator() === "") != null ? _ref : {
-        "": operatorDefinitions[this.operator()].apply(this)
-      };
+      var x;
+      if (this.operator() === "") {
+        x = "";
+      } else {
+        x = operatorDefinitions[this.operator()].apply(this);
+      }
+      return x;
     };
 
     Condition.prototype.toString = function() {
@@ -293,6 +299,7 @@
 
     function App() {
       this.selectCondition = __bind(this.selectCondition, this);
+      this.viewStatement = __bind(this.viewStatement, this);
       var n, t;
       this.conditions = ko.observableArray(dataArr);
       this.columns = ko.observableArray((function() {
@@ -320,7 +327,22 @@
     };
 
     App.prototype.viewStatement = function() {
-      return this.conditions().join("");
+      var _this = this;
+      return ko.computed(function() {
+        var result, statement;
+        statement = _this.conditions().join("");
+        try {
+          result = SQLParser.parse(statement).where.conditions;
+        } catch (error) {
+          result = error;
+        }
+        if (typeof result === "string") {
+          $("#navPager_right").html(result);
+        } else {
+          $("#navPager_right").html(statement);
+        }
+        return statement;
+      });
     };
 
     App.prototype.selectCondition = function(selectedItem) {
@@ -358,7 +380,7 @@
       "(": "(",
       "Column": "FirstName",
       "Operator": "Equal To",
-      "Value": "richard",
+      "Comparison": "richard",
       ")": ")",
       "Seperator": "OR",
       "Statement": ""
@@ -367,7 +389,7 @@
       "(": "(",
       "Column": "Active",
       "Operator": "Equal To",
-      "Value": "1",
+      "Comparison": "1",
       ")": ")",
       "Seperator": "",
       "Statement": ""
