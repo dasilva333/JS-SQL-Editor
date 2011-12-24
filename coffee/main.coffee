@@ -91,6 +91,7 @@ class Condition
     
   setColumnName: (name) ->
     @columnName name
+    @Column = name
     
   setOperator: (symbol) ->
     @operator symbol
@@ -115,6 +116,17 @@ class Condition
   
   getOperators: ->
     operator for operator of columnTypes[ @getDataType() ]
+
+  operatorTemplate: (value, options) ->
+    elemID = options.id;
+    setTimeout( ->
+      ko.applyBindings(Main, $("#" + elemID).get(0))
+    ,250)
+    '<select data-bind="value: selectedCondition.selectedOperator, options: selectedCondition.getOperators()"></select>';
+    ##'<select data-bind="value: selectedCondition.selectedOperator, options: selectedCondition.getOperators"></select>';
+    
+  getElemValue: (e) ->
+    $(e).val()
 
   getComparison: ->
     @comparison
@@ -179,7 +191,7 @@ class App
   constructor: ->
     @conditions = ko.observableArray(dataArr)
     @columns = ko.observableArray(new Column n,t for n,t of defaultColumns)
-    @selectedCondition = ko.mapping.fromJS(emptyCondition)
+    @selectedCondition = new Condition(emptyCondition)
     
   getConditions: ->
     @conditions
@@ -192,20 +204,10 @@ class App
     
   viewStatement: ->
     @conditions().join("")
-    
-  operatorTemplate: =>
-    console.log("selectedCondition")
-    console.log( self.selectedCondition )
-    '<select data-bind="value: operator">' + (@selectedCondition.getOperators().map (operator) -> ('<option>' + operator + "</option>")).join("") + "</select>"
   
-  getActiveOperators: (elem, operation, value) ->
-    if(operation == 'get')
-      $(elem).val()
-    else if(operation == 'set')
-      $(elem).val(value)
-
   selectCondition: (selectedItem) =>
     console.log(" blah ")
+    ###
     if selectedItem.ID is "new_row"
       item = emptyCondition
     else
@@ -213,6 +215,8 @@ class App
     item = $.extend( new Condition(item), item )  
     console.log(item)  
     ko.mapping.fromJS(item , @selectedCondition)
+    ###
+    @selectedCondition = new Condition(selectedItem)
     
   ########
   ##add: ->

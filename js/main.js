@@ -144,7 +144,8 @@
     };
 
     Condition.prototype.setColumnName = function(name) {
-      return this.columnName(name);
+      this.columnName(name);
+      return this.Column = name;
     };
 
     Condition.prototype.setOperator = function(symbol) {
@@ -182,6 +183,19 @@
         _results.push(operator);
       }
       return _results;
+    };
+
+    Condition.prototype.operatorTemplate = function(value, options) {
+      var elemID;
+      elemID = options.id;
+      setTimeout(function() {
+        return ko.applyBindings(Main, $("#" + elemID).get(0));
+      }, 250);
+      return '<select data-bind="value: selectedCondition.selectedOperator, options: selectedCondition.getOperators()"></select>';
+    };
+
+    Condition.prototype.getElemValue = function(e) {
+      return $(e).val();
     };
 
     Condition.prototype.getComparison = function() {
@@ -279,7 +293,6 @@
 
     function App() {
       this.selectCondition = __bind(this.selectCondition, this);
-      this.operatorTemplate = __bind(this.operatorTemplate, this);
       var n, t;
       this.conditions = ko.observableArray(dataArr);
       this.columns = ko.observableArray((function() {
@@ -291,7 +304,7 @@
         }
         return _results;
       })());
-      this.selectedCondition = ko.mapping.fromJS(emptyCondition);
+      this.selectedCondition = new Condition(emptyCondition);
     }
 
     App.prototype.getConditions = function() {
@@ -310,33 +323,18 @@
       return this.conditions().join("");
     };
 
-    App.prototype.operatorTemplate = function() {
-      console.log("selectedCondition");
-      console.log(self.selectedCondition);
-      return '<select data-bind="value: operator">' + (this.selectedCondition.getOperators().map(function(operator) {
-        return '<option>' + operator + "</option>";
-      })).join("") + "</select>";
-    };
-
-    App.prototype.getActiveOperators = function(elem, operation, value) {
-      if (operation === 'get') {
-        return $(elem).val();
-      } else if (operation === 'set') {
-        return $(elem).val(value);
-      }
-    };
-
     App.prototype.selectCondition = function(selectedItem) {
-      var item;
       console.log(" blah ");
-      if (selectedItem.ID === "new_row") {
-        item = emptyCondition;
-      } else {
-        item = selectedItem;
-      }
-      item = $.extend(new Condition(item), item);
-      console.log(item);
-      return ko.mapping.fromJS(item, this.selectedCondition);
+      /*
+          if selectedItem.ID is "new_row"
+            item = emptyCondition
+          else
+            item = selectedItem;  
+          item = $.extend( new Condition(item), item )  
+          console.log(item)  
+          ko.mapping.fromJS(item , @selectedCondition)
+      */
+      return this.selectedCondition = new Condition(selectedItem);
     };
 
     return App;

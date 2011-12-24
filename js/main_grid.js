@@ -1,13 +1,7 @@
 
-	var isLoaded = false;
 	var lastsel;  
 	ko.bindingHandlers.grid = {
 		init: function (element, valueAccessor) {
-			if (isLoaded == false)
-				isLoaded = true
-			else
-				return
-			console.log("init")	
 			var value = valueAccessor();
 			var dataArr = ko.utils.unwrapObservable(value.data).slice(0);
 			var grid = $(element).jqGrid({
@@ -62,7 +56,6 @@
 			jQuery(element).jqGrid('inlineNav',"#navPager", {edit:false,add:true,del:false,search:false,nav:false,refresh:false});
 		},
 		update: function (element, valueAccessor) {
-			console.log("update")
 			var value = valueAccessor();
 			var gridData = $(element).jqGrid('getGridParam', 'data');
 			var newData = ko.utils.unwrapObservable(value.data);

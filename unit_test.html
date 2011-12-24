@@ -27,26 +27,88 @@
 	<script src="js/jquery.contextmenu.js" type="text/javascript"></script>
 	
 	<script src="js/main_grid.js" type="text/javascript"></script>
-	<script src="js/main.js" type="text/javascript"></script>
+	<script type='text/javascript'>//<![CDATA[ 
+		$(function(){
+			dataArr = [
+			  ({
+			    "ID": 1,
+			    "(": "(",
+			    "Column": "FirstName",
+			    "Operator": "Equal To",
+			    "Value": "richard",
+			    ")": ")",
+			    "Seperator": "OR",
+			    "Statement": "",
+			  }),
+			 ({
+			    "ID": 2,
+			    "(": "(",
+			    "Column": "Active",
+			    "Operator": "Equal To",
+			    "Value": "1",
+			    ")": ")",
+			    "Seperator": "",
+			    "Statement": "",
+			  })
+			]  
+			window.Grid = new (function(){
+			    var self = this;
+			    this.conditions = ko.observableArray(dataArr)
+			    this.selectCondition = function(){
+			    	console.log('select me')
+			    }
+			    this.selectedCondition = new (function(){
+					var self = this;
+				    this.selectedName = ko.observable("one")
+				    this.selectedOperator = ko.observable("")
+				    this.list = [
+				        {name: 'one', subList: ['1-1:1-1', '1-2:1-2']},
+				        {name: 'two', subList: ['2-1:2-1', '2-2:2-2']},
+				        {name: 'three', subList: ['3-1:3-1', '3-2:3-2']}
+				    ]
+				    this.getGridColumns = this.list.map(function(o){ return o.name + ":" + o.name }).join(";");
+				    this.getOperators = ko.computed(function(){
+				    	var x = ko.utils.arrayFirst(this.list, function(o){  
+					        if (self.selectedName() && self.selectedName() == o.name )
+					            return true
+					    })
+					    if (x)
+					    	return x.subList; //.join(";")
+				    }, self)
+				    
+				    this.operatorTemplate = function(value, options){
+				    	setTimeout(function(){
+				    		ko.applyBindings(Grid, $("#" + options.id).get(0))
+				    	},250)
+				    	return '<select data-bind="value: selectedCondition.selectedOperator, options: selectedCondition.getOperators"></select>';
+				    }
+				    
+				    this.getElemValue = function(e){
+				    	return $(e).val();
+				    }
+				})()
+			})()
+			ko.applyBindings(Grid)
+		});//]]>  
 	
+	</script>
+
 </head>
-<body>
-	<div id="container">
-		
+<body> 
+
+  	<div id="container">
   	   <table id="conditionsGrid" data-bind="grid: { 
-		data: conditions,
-			selectItem: selectCondition,
+			data: Grid.conditions,
+			selectItem: Grid.selectCondition,
 			caption: 'Criteria Builder',
 			pager: '#gridpager',
 			colModel: [
-				{ name: 'ID', index: 'ID', width: 15, sortable: true },
-				{ name: '(', index: '(', width: 30, editable: true, edittype:'select',editoptions:{value:'(:(;((:((;(((:((('} },
 				{ 
 					name: 'Column', index: 'Column', width: 200, editable: true, edittype: 'select', 
 					editoptions: { 
-						value: getGridColumns(), 
+						value: selectedCondition.getGridColumns, 
 						dataEvents: [
-							{ type: 'click', fn: function(e) { selectedCondition.setColumnName(e.target.value); } }
+							{ type: 'click', fn: function(e) { selectedCondition.selectedName(e.target.value); } }
 						] 
 					} 
 				},
@@ -56,14 +118,10 @@
 						custom_element: selectedCondition.operatorTemplate, 
 						custom_value: selectedCondition.getElemValue, 
 						dataEvents: [
-							{ type: 'click', fn: function(e) { selectedCondition.setOperator(e.target.value); } }
+							{ type: 'click', fn: function(e) { selectedCondition.selectedOperator(e.target.value); } }
 						]  
 					}  
-				},
-				{ name: 'Comparison', index: 'Comparison', width: 200, editable: true },
-				{ name: ')', index: ')', width: 30, editable: true, edittype:'select',editoptions:{value:'):);)):));))):)))'} },
-				{ name: 'Seperator', index: 'Seperator', width: 60, editable: true },
-				{ name: 'Statement', index: 'Statement', width: 400, editable: true }
+				}
 			],
 			rowId: 'ID'
         }">
@@ -71,4 +129,7 @@
 		<div id="navPager"></div>
   	</div>
 </body>
+
+
 </html>
+
