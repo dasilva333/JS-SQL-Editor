@@ -21,6 +21,8 @@
 	<script src="js/jquery.jqGrid.min.js" type="text/javascript"></script>
 	<script src="js/jquery.tablednd.js" type="text/javascript"></script>
 	<script src="js/jquery.contextmenu.js" type="text/javascript"></script>
+	<script src="js/grid.formedit.js" type="text/javascript"></script>
+	<script src="js/grid.common.js" type="text/javascript"></script>
 	<script src="js/main_grid.js" type="text/javascript"></script>
 	<script src="js/main.js" type="text/javascript"></script>
 	
@@ -28,27 +30,27 @@
 <body>
 	<div id="container">
 		
-  	   <table id="conditionsGrid" data-bind="grid: { data: conditions,
-                                                	   selectItem: selectCondition,
-                                                  	   colModel: [
-                                                  	    { name: 'ID', index: 'ID', width: 15, sortable: true },
-													    { name: '(', index: '(', width: 30, editable: true, edittype:'select',editoptions:{value:'(:(;((:((;(((:((('} },
-													    { name: 'Column', index: 'Column', width: 200, editable: true, edittype:'select',editoptions:{value:getGridColumns() } },
-													    { name: 'Operator', index: 'Operator', width: 100, editable: true, edittype:'custom', editoptions: { custom_element: operatorTemplate, custom_value: getActiveOperators} },
-													    { name: 'Comparison', index: 'Comparison', width: 200, editable: true },
-													    { name: ')', index: ')', width: 30, editable: true, edittype:'select',editoptions:{value:'):);)):));))):)))'} },
-													    { name: 'Seperator', index: 'Seperator', width: 60, editable: true },
-													    { name: 'Statement', index: 'Statement', width: 400, editable: true }
-													   ],
-                                                 	   rowId: 'ID'
-                                                    }">
+  	   <table id="conditionsGrid" data-bind="grid: { 
+			data: conditions,
+			selectItem: selectCondition,
+			caption: 'Criteria Builder',
+			pager: '#gridpager',
+			colModel: [
+				{ name: 'ID', index: 'ID', width: 15, sortable: true },
+				{ name: '(', index: '(', width: 30, editable: true, edittype:'select',editoptions:{value:'(:(;((:((;(((:((('} },
+				{ name: 'Column', index: 'Column', width: 200, editable: true, edittype:'select',editoptions:{value:getGridColumns() } },
+				{ name: 'Operator', index: 'Operator', width: 150, editable: true, edittype:'custom', editoptions: { custom_element: operatorTemplate, custom_value: getActiveOperators} },
+				{ name: 'Comparison', index: 'Comparison', width: 200, editable: true },
+				{ name: ')', index: ')', width: 30, editable: true, edittype:'select',editoptions:{value:'):);)):));))):)))'} },
+				{ name: 'Seperator', index: 'Seperator', width: 60, editable: true },
+				{ name: 'Statement', index: 'Statement', width: 400, editable: true }
+			],
+			rowId: 'ID'
+        }">
     	</table>
-
-		<form data-bind="with: selectedCondition" style="margin-top:10px">
-			<input type="hidden" data-bind="value: ID"/> <br/>
-			Column:<input type="text" data-bind="value: Column"/>
-			Statement:<input type="text" data-bind="value: Statement"/>
-			<input type="button" value="Add" data-bind="click:$parent.add.bind($parent)"/>
+		<div id="navpager"></div>
+		<form style="margin-top:10px">
+			<input type="button" value="Add New" data-bind="click: add"/>
 		</form>
   	</div>
 </body>

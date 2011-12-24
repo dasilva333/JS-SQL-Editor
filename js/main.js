@@ -1,5 +1,5 @@
 (function() {
-  var App, Column, Condition, columnTypes, defaultColumns, operatorDefinitions;
+  var App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   defaultColumns = {
@@ -123,12 +123,20 @@
   Condition = (function() {
 
     function Condition(params) {
+      this.getOpAndComp = __bind(this.getOpAndComp, this);      this.ID = params['ID'] || 0;
       this.startParen = ko.observable(params['('] || "");
+      this['('] = params['('];
       this.columnName = ko.observable(params['Column'] || "");
+      this.Column = params['Column'];
       this.operator = ko.observable(params['Operator'] || "");
+      this.Operator = params['Operator'];
       this.comparison = ko.observable(params['Comparison'] || "");
+      this.Comparison = params['Comparison'];
       this.endParen = ko.observable(params[')'] || "");
+      this[')'] = params[')'];
       this.seperator = ko.observable(params['Seperator'] || "");
+      this.Seperator = params['Seperator'];
+      this.Statement = this.toString();
     }
 
     Condition.prototype.setStartParen = function(parens) {
@@ -181,16 +189,20 @@
     };
 
     Condition.prototype.getFormattedComparison = function() {
-      var _ref;
+      var x;
+      x = null;
       if (this.getDataType() === 'varchar') {
-        return this.comparison().singleQuoted();
+        x = this.comparison().singleQuoted();
       } else if (this.getDataType() === 'bit') {
-        return (_ref = this.comparison() === "True") != null ? _ref : {
-          1: 0
-        };
+        if (this.comparison() === "True") {
+          x = 1;
+        } else {
+          x = 0;
+        }
       } else {
-        return this.comparison();
+        x = this.comparison();
       }
+      return x;
     };
 
     Condition.prototype.getComparisons = function() {
@@ -210,9 +222,6 @@
     };
 
     Condition.prototype.getSeperator = function() {
-      if (Main.getConditions()()[Main.getConditions()().length - 1] !== this && this.seperator() === "") {
-        this.seperator("AND");
-      }
       return this.seperator();
     };
 
@@ -301,13 +310,17 @@
     };
 
     App.prototype.operatorTemplate = function() {
-      return "<select>" + (this.columns().map(function(o) {
-        return "<option>" + o.viewName() + "</option>";
+      return '<select data-bind="value: operator">' + (this.selectedCondition.getOperators().map(function(operator) {
+        return '<option>' + operator + "</option>";
       })).join("") + "</select>";
     };
 
-    App.prototype.getActiveOperators = function() {
-      return ["="];
+    App.prototype.getActiveOperators = function(elem, operation, value) {
+      if (operation === 'get') {
+        return $(elem).val();
+      } else if (operation === 'set') {
+        return $(elem).val(value);
+      }
     };
 
     App.prototype.selectCondition = function(selectedItem) {
@@ -327,6 +340,39 @@
     return App;
 
   })();
+
+  emptyCondition = {
+    "ID": null,
+    "(": null,
+    "Column": "",
+    "Operator": null,
+    "Value": null,
+    ")": null,
+    "Seperator": null,
+    "Statement": null
+  };
+
+  dataArr = [
+    new Condition({
+      "ID": 1,
+      "(": "(",
+      "Column": "FirstName",
+      "Operator": "Equal To",
+      "Value": "richard",
+      ")": ")",
+      "Seperator": "OR",
+      "Statement": ""
+    }), new Condition({
+      "ID": 2,
+      "(": "(",
+      "Column": "Active",
+      "Operator": "Equal To",
+      "Value": "1",
+      ")": ")",
+      "Seperator": "",
+      "Statement": ""
+    })
+  ];
 
   $(function() {
     window["Main"] = new App();

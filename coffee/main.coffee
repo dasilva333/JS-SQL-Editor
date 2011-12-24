@@ -71,13 +71,21 @@ String::singleQuoted = ->
 class Condition
   
   constructor: (params) ->
+    @ID = params['ID'] || 0
     @startParen = ko.observable params['('] || ""
+    this['('] = params['(']
     @columnName = ko.observable params['Column'] || ""
+    @Column = params['Column'] 
     @operator = ko.observable params['Operator'] || ""
+    @Operator = params['Operator'] 
     @comparison = ko.observable params['Comparison'] || ""
+    @Comparison = params['Comparison'] 
     @endParen = ko.observable params[')'] || ""
+    this[')'] = params[')'] 
     @seperator = ko.observable params['Seperator'] || ""
-    
+    @Seperator = params['Seperator']
+    @Statement = @toString()
+     
   setStartParen: (parens) ->
     @startParen parens
     
@@ -98,10 +106,10 @@ class Condition
     
   getStartParen: ->
     @startParen
-
+     
   getColumnName: ->
     @columnName
-
+    
   getOperator: ->
     @operator
   
@@ -112,13 +120,17 @@ class Condition
     @comparison
  
   getFormattedComparison: ->
+    x = null
     if (@getDataType() is 'varchar')
-      @comparison().singleQuoted()
+      x = @comparison().singleQuoted()
     else if (@getDataType() is 'bit')
-      @comparison() is "True" ? 1 : 0;  
+      if @comparison() is "True"
+        x = 1
+      else  
+        x = 0;  
     else
-      @comparison()
-      
+      x = @comparison()
+    return x
   getComparisons: ->
     columnTypes[ @getDataType() ][ @getOperator()() ]
 
@@ -132,14 +144,15 @@ class Condition
     @endParen
    
   getSeperator: ->
-    if (Main.getConditions()()[Main.getConditions()().length - 1] isnt @ and @seperator() is "")
-      @seperator "AND"
+    ##TODO figure out a way to read the array its in and make these type of logic decisions
+    ##if (Main.getConditions()()[Main.getConditions()().length - 1] isnt @ and @seperator() is "")
+    ##  @seperator "AND"
     @seperator()
     
   getDataType: ->
     defaultColumns[ @columnName() ]
       
-  getOpAndComp: ->
+  getOpAndComp: =>
     operatorDefinitions[@operator()].apply(@)
     
   toString: () ->
@@ -183,11 +196,14 @@ class App
     @conditions.push new Condition "(", "FirstName", "Equal To" ,"richard" , ")"
     
   operatorTemplate: =>
-    "<select>" + (@columns().map (o) -> ("<option>" + o.viewName() + "</option>")).join("") + "</select>"
+    '<select data-bind="value: operator">' + (@selectedCondition.getOperators().map (operator) -> ('<option>' + operator + "</option>")).join("") + "</select>"
   
-  getActiveOperators: ->
-    ["="]
-      
+  getActiveOperators: (elem, operation, value) ->
+    if(operation == 'get')
+      $(elem).val()
+    else if(operation == 'set')
+      $(elem).val(value)
+
   selectCondition: (selectedItem) =>
     ko.mapping.fromJS( $.extend( new Condition(selectedItem), selectedItem ), @selectedCondition)
   
@@ -198,6 +214,39 @@ class App
         @conditions.push(ko.mapping.toJS(@selectedCondition));    
       ko.mapping.fromJS(emptyCondition, @selectedCondition);  
 
+emptyCondition = {
+  "ID": null,
+  "(": null,
+  "Column": "",
+  "Operator": null,
+  "Value": null,
+  ")": null,
+  "Seperator": null,
+  "Statement": null
+}
+
+dataArr = [
+  new Condition({
+    "ID": 1,
+    "(": "(",
+    "Column": "FirstName",
+    "Operator": "Equal To",
+    "Value": "richard",
+    ")": ")",
+    "Seperator": "OR",
+    "Statement": "",
+  }),
+  new Condition({
+    "ID": 2,
+    "(": "(",
+    "Column": "Active",
+    "Operator": "Equal To",
+    "Value": "1",
+    ")": ")",
+    "Seperator": "",
+    "Statement": "",
+  })
+]    
 $ ->
   window["Main"] = new App()
   ko.applyBindings Main

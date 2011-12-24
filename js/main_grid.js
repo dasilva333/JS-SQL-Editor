@@ -1,40 +1,6 @@
 
 	
-	var lastsel;
-	var dataArr = [
-   		{
-   			"ID": 1,
-   			"(": "(",
-   			"Column": "FirstName",
-   			"Operator": "=",
-   			"Value": "richard",
-   			")": ")",
-   			"Seperator": "OR",
-   			"Statement": "",
-   		},
-   		{
-   			"ID": 2,
-   			"(": "(",
-   			"Column": "Active",
-   			"Operator": "=",
-   			"Value": "1",
-   			")": ")",
-   			"Seperator": "",
-   			"Statement": "",
-   		}
-   	];
-   	
-   	var emptyCondition = {
-   		"ID": null,
-   		"(": null,
-   		"Column": "",
-   		"Operator": null,
-   		"Value": null,
-   		")": null,
-   		"Seperator": null,
-   		"Statement": null
-   	};
-	       	
+	var lastsel;  
 	ko.bindingHandlers.grid = {
 		init: function (element, valueAccessor) {
 			var value = valueAccessor();
@@ -76,8 +42,9 @@
 				afterEditCell:function (rowid, cellname, value, iRow, iCol){
 					console.log(arguments); 				   
 				},
-				editurl: "grid.html"			
-			});
+				editurl: "grid.html",
+				caption: value.caption
+			})
 			$(element).jqGrid("setGridParam", {
 				data: ko.utils.unwrapObservable(value.data).slice(0)
 			});
