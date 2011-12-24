@@ -1,8 +1,13 @@
 
-	
+	var isLoaded = false;
 	var lastsel;  
 	ko.bindingHandlers.grid = {
 		init: function (element, valueAccessor) {
+			if (isLoaded == false)
+				isLoaded = true
+			else
+				return
+			console.log("init")	
 			var value = valueAccessor();
 			var dataArr = ko.utils.unwrapObservable(value.data).slice(0);
 			var grid = $(element).jqGrid({
@@ -17,8 +22,7 @@
 				hoverrows: false,
 				colModel: value.colModel,
 				cmTemplate: { align: "center" },
-				pager: value.pager,
-				rowNum: 3,
+				pager: "#navPager",
 				onSelectRow: function (id) {
 					var item = $(element).jqGrid('getLocalRow', id);
 					value.selectItem(item);
@@ -47,9 +51,18 @@
 			})
 			$(element).jqGrid("setGridParam", {
 				data: ko.utils.unwrapObservable(value.data).slice(0)
-			});
+			})
+			jQuery(element).jqGrid('navGrid',"#navPager",
+					{edit:false,add:false,del:false,search:false,nav:false,refresh:false}, //options
+					{reloadAfterSubmit:false}, // edit options
+					{reloadAfterSubmit:false}, // add options
+					{reloadAfterSubmit:false}, // del options
+					{} // search options
+			); 
+			jQuery(element).jqGrid('inlineNav',"#navPager", {edit:false,add:true,del:false,search:false,nav:false,refresh:false});
 		},
 		update: function (element, valueAccessor) {
+			console.log("update")
 			var value = valueAccessor();
 			var gridData = $(element).jqGrid('getGridParam', 'data');
 			var newData = ko.utils.unwrapObservable(value.data);

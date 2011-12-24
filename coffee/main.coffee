@@ -153,7 +153,7 @@ class Condition
     defaultColumns[ @columnName() ]
       
   getOpAndComp: =>
-    operatorDefinitions[@operator()].apply(@)
+    @operator() is "" ? "" : operatorDefinitions[@operator()].apply(@)
     
   toString: () ->
     " #{ @startParen() } #{ @columnName() } #{ @getOpAndComp() } #{ @endParen() } #{ @getSeperator() } "
@@ -174,7 +174,8 @@ class Column
     operator for operator of columnTypes[ @dataType() ]
     
 class App
-
+  
+  self = @
   constructor: ->
     @conditions = ko.observableArray(dataArr)
     @columns = ko.observableArray(new Column n,t for n,t of defaultColumns)
@@ -191,11 +192,10 @@ class App
     
   viewStatement: ->
     @conditions().join("")
-
-  addPlaceholder: =>
-    @conditions.push new Condition "(", "FirstName", "Equal To" ,"richard" , ")"
     
   operatorTemplate: =>
+    console.log("selectedCondition")
+    console.log( self.selectedCondition )
     '<select data-bind="value: operator">' + (@selectedCondition.getOperators().map (operator) -> ('<option>' + operator + "</option>")).join("") + "</select>"
   
   getActiveOperators: (elem, operation, value) ->
@@ -205,24 +205,32 @@ class App
       $(elem).val(value)
 
   selectCondition: (selectedItem) =>
-    ko.mapping.fromJS( $.extend( new Condition(selectedItem), selectedItem ), @selectedCondition)
-  
-  add: ->
-      if (!@selectedCondition.ID())
-        newId = @conditions().length + 1;
-        @selectedCondition.ID(newId);
-        @conditions.push(ko.mapping.toJS(@selectedCondition));    
-      ko.mapping.fromJS(emptyCondition, @selectedCondition);  
-
+    console.log(" blah ")
+    if selectedItem.ID is "new_row"
+      item = emptyCondition
+    else
+      item = selectedItem;  
+    item = $.extend( new Condition(item), item )  
+    console.log(item)  
+    ko.mapping.fromJS(item , @selectedCondition)
+    
+  ########
+  ##add: ->
+  ##    if (!@selectedCondition.ID())
+  ##      newId = @conditions().length + 1;
+  ##      @selectedCondition.ID(newId);
+  ##      @conditions.push(ko.mapping.toJS(@selectedCondition));    
+  ##    ko.mapping.fromJS(emptyCondition, @selectedCondition);  
+  #######
 emptyCondition = {
-  "ID": null,
-  "(": null,
+  "ID": "new_row",
+  "(": "",
   "Column": "",
-  "Operator": null,
-  "Value": null,
-  ")": null,
-  "Seperator": null,
-  "Statement": null
+  "Operator": "",
+  "Value": "",
+  ")": "",
+  "Seperator": "",
+  "Statement": ""
 }
 
 dataArr = [

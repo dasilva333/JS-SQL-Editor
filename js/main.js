@@ -230,7 +230,10 @@
     };
 
     Condition.prototype.getOpAndComp = function() {
-      return operatorDefinitions[this.operator()].apply(this);
+      var _ref;
+      return (_ref = this.operator() === "") != null ? _ref : {
+        "": operatorDefinitions[this.operator()].apply(this)
+      };
     };
 
     Condition.prototype.toString = function() {
@@ -270,11 +273,13 @@
   })();
 
   App = (function() {
+    var self;
+
+    self = App;
 
     function App() {
       this.selectCondition = __bind(this.selectCondition, this);
       this.operatorTemplate = __bind(this.operatorTemplate, this);
-      this.addPlaceholder = __bind(this.addPlaceholder, this);
       var n, t;
       this.conditions = ko.observableArray(dataArr);
       this.columns = ko.observableArray((function() {
@@ -305,11 +310,9 @@
       return this.conditions().join("");
     };
 
-    App.prototype.addPlaceholder = function() {
-      return this.conditions.push(new Condition("(", "FirstName", "Equal To", "richard", ")"));
-    };
-
     App.prototype.operatorTemplate = function() {
+      console.log("selectedCondition");
+      console.log(self.selectedCondition);
       return '<select data-bind="value: operator">' + (this.selectedCondition.getOperators().map(function(operator) {
         return '<option>' + operator + "</option>";
       })).join("") + "</select>";
@@ -324,17 +327,16 @@
     };
 
     App.prototype.selectCondition = function(selectedItem) {
-      return ko.mapping.fromJS($.extend(new Condition(selectedItem), selectedItem), this.selectedCondition);
-    };
-
-    App.prototype.add = function() {
-      var newId;
-      if (!this.selectedCondition.ID()) {
-        newId = this.conditions().length + 1;
-        this.selectedCondition.ID(newId);
-        this.conditions.push(ko.mapping.toJS(this.selectedCondition));
+      var item;
+      console.log(" blah ");
+      if (selectedItem.ID === "new_row") {
+        item = emptyCondition;
+      } else {
+        item = selectedItem;
       }
-      return ko.mapping.fromJS(emptyCondition, this.selectedCondition);
+      item = $.extend(new Condition(item), item);
+      console.log(item);
+      return ko.mapping.fromJS(item, this.selectedCondition);
     };
 
     return App;
@@ -342,14 +344,14 @@
   })();
 
   emptyCondition = {
-    "ID": null,
-    "(": null,
+    "ID": "new_row",
+    "(": "",
     "Column": "",
-    "Operator": null,
-    "Value": null,
-    ")": null,
-    "Seperator": null,
-    "Statement": null
+    "Operator": "",
+    "Value": "",
+    ")": "",
+    "Seperator": "",
+    "Statement": ""
   };
 
   dataArr = [
