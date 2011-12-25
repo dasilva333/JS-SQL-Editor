@@ -28,7 +28,7 @@
 								var oldItem = ko.utils.arrayFirst(dataArr, function (obj) { return obj.ID == id;  });
 								var newItem = $(element).jqGrid('getLocalRow', id);
 								if (oldItem !== null) {
-									value.data.replace(oldItem, ko.mapping.toJS(newItem));
+									value.data.replace(oldItem, newItem);
 								}
 								lastsel = null;
 								return true
@@ -39,6 +39,10 @@
 				}, 
 				gridComplete: value.gridComplete,
 				onCellSelect: value.onCellSelect,
+				errorCell: function(){
+					
+					console.log("errorCell")
+				},
 				editurl: "grid.html",
 				caption: value.caption,
 				//disable paging

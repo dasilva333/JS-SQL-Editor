@@ -136,6 +136,7 @@
       this.Operator = params['Operator'];
       this.comparison = ko.observable(params['Comparison'] || "");
       this.Comparison = params['Comparison'];
+      this.presetComparison = ko.observable(this.comparison());
       this.endParen = ko.observable(params[')'] || "");
       this[')'] = params[')'];
       this.seperator = ko.observable(params['Seperator'] || "");
@@ -144,7 +145,8 @@
     }
 
     Condition.prototype.setStartParen = function(parens) {
-      return this.startParen(parens);
+      this.startParen(parens);
+      return this['('] = parens;
     };
 
     Condition.prototype.setColumnName = function(name) {
@@ -162,18 +164,22 @@
     };
 
     Condition.prototype.setComparison = function(value) {
-      return this.comparison(value);
+      this.comparison(value);
+      return this.Comparison = value;
     };
 
     Condition.prototype.setEndParen = function(parens) {
-      return this.endParen(parens);
+      this.endParen(parens);
+      return this[')'] = parens;
     };
 
     Condition.prototype.setSeperator = function(bool) {
-      return this.seperator(bool);
+      this.seperator(bool);
+      return this.Seperator = bool;
     };
 
     Condition.prototype.getStartParen = function() {
+      this['('] = this.startParen();
       return this.startParen;
     };
 
@@ -182,6 +188,7 @@
     };
 
     Condition.prototype.getOperator = function() {
+      this.Operator = this.operator();
       return this.operator;
     };
 
@@ -199,6 +206,7 @@
     };
 
     Condition.prototype.getComparison = function() {
+      this.Comparison = this.comparison();
       return this.comparison;
     };
 
@@ -223,8 +231,15 @@
       return columnTypes[this.getDataType()][this.getOperator()()];
     };
 
+    Condition.prototype.getPresetComparison = function() {
+      if (this.getDataType() === 'bit') {
+        this.setComparison(this.presetComparison());
+      }
+      return this.presetComparison;
+    };
+
     Condition.prototype.comparisonTemplate = function(value, options) {
-      return '<select data-bind="valueUpdate: \'change\', options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select><input type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()">';
+      return '<select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select><input type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()">';
     };
 
     Condition.prototype.showPresetComparisons = function() {
@@ -236,10 +251,12 @@
     };
 
     Condition.prototype.getEndParen = function() {
+      this[')'] = this.endParen();
       return this.endParen;
     };
 
     Condition.prototype.getSeperator = function() {
+      this.Seperator = this.seperator();
       return this.seperator();
     };
 
@@ -262,7 +279,7 @@
     };
 
     Condition.prototype.toString = function() {
-      return " " + (this.startParen()) + " " + (this.columnName()) + " " + (this.getOpAndComp()) + " " + (this.endParen()) + " " + (this.getSeperator()) + " ";
+      return this.Statement = " " + (this.startParen()) + " " + (this.columnName()) + " " + (this.getOpAndComp()) + " " + (this.endParen()) + " " + (this.getSeperator()) + " ";
     };
 
     return Condition;

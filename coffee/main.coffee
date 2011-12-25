@@ -82,6 +82,7 @@ class Condition
     @Operator = params['Operator'] 
     @comparison = ko.observable params['Comparison'] || ""
     @Comparison = params['Comparison'] 
+    @presetComparison = ko.observable @comparison()
     @endParen = ko.observable params[')'] || ""
     this[')'] = params[')'] 
     @seperator = ko.observable params['Seperator'] || ""
@@ -90,6 +91,7 @@ class Condition
      
   setStartParen: (parens) ->
     @startParen parens
+    this['('] = parens
     
   setColumnName: (name) ->
     @columnName name
@@ -104,20 +106,25 @@ class Condition
   
   setComparison: (value) ->
     @comparison value
+    @Comparison = value
     
   setEndParen: (parens) ->
     @endParen parens
+    this[')'] = parens
   
   setSeperator: (bool) ->
     @seperator bool
+    @Seperator = bool
     
   getStartParen: ->
+    this['('] = @startParen()
     @startParen
      
   getColumnName: ->
     @columnName
     
   getOperator: ->
+    @Operator = @operator()
     @operator
   
   getOperators: ->
@@ -127,6 +134,7 @@ class Condition
     '<select data-bind="value: selectedCondition.getOperator(), options: selectedCondition.getOperators(), optionsCaption: defaultCaption"></select>';
  
   getComparison: ->
+    @Comparison = @comparison()
     @comparison
  
   getFormattedComparison: ->
@@ -145,8 +153,14 @@ class Condition
   getComparisons: ->
     columnTypes[ @getDataType() ][ @getOperator()() ]
 
+  getPresetComparison: ->
+    
+    if (@getDataType() is 'bit')
+      @setComparison @presetComparison()  
+    @presetComparison
+  
   comparisonTemplate: (value, options) ->
-    '<select data-bind="valueUpdate: \'change\', options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select><input type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()">'
+    '<select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select><input type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()">'
 
   showPresetComparisons: ->
     @getComparisons().length > 0
@@ -155,12 +169,14 @@ class Condition
     @getComparisons().indexOf("") > -1
     
   getEndParen: ->
+    this[')'] = @endParen()
     @endParen
    
   getSeperator: ->
     ##TODO figure out a way to read the array its in and make these type of logic decisions
     ##if (Main.getConditions()()[Main.getConditions()().length - 1] isnt @ and @seperator() is "")
-    ##  @seperator "AND"
+    ##  @seperator "AND"`
+    @Seperator = @seperator()
     @seperator()
     
   getDataType: ->
@@ -177,7 +193,7 @@ class Condition
     '<span data-bind="text: selectedCondition.toString()"></span>'  
     
   toString: =>
-    " #{ @startParen() } #{ @columnName() } #{ @getOpAndComp() } #{ @endParen() } #{ @getSeperator() } "
+    @Statement = " #{ @startParen() } #{ @columnName() } #{ @getOpAndComp() } #{ @endParen() } #{ @getSeperator() } "
 
 class Column
 

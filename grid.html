@@ -42,7 +42,7 @@
 				{ name: 'ID', index: 'ID', width: 15, sortable: true },
 				{ name: '(', index: '(', width: 30, editable: true, edittype:'select',
 						editoptions:{
-							value:':None;(:(;((:((;(((:(((', 
+							value:':;(:(;((:((;(((:(((', 
 							dataEvents: [ { type: 'click', fn: function(e) { selectedCondition.setStartParen(e.target.value); } } ] 
 						} 
 				},
@@ -65,22 +65,19 @@
 				{ name: 'Comparison', index: 'Comparison', width: 200, editable: true, edittype: 'custom', 
 					editoptions: { 
 						custom_element: selectedCondition.comparisonTemplate, 
-						custom_value: selectedCondition.getComparison()(), 
-						dataEvents: [
-							{ type: 'change', fn: function(e) { selectedCondition.setComparison(e.target.value); } }
-						]  
+						custom_value: selectedCondition.getComparison()()
 					}   
 				
 				},
 				{ name: ')', index: ')', width: 30, editable: true, edittype:'select',
 						editoptions:{
-							value:':None;):);)):));))):)))', 
+							value:':;):);)):));))):)))', 
 							dataEvents: [ { type: 'click', fn: function(e) { selectedCondition.setEndParen(e.target.value); } } ] 
 						} 
 				},
 				{ name: 'Seperator', index: 'Seperator', width: 60, editable: true, edittype:'select',
 						editoptions:{
-							value:':None;OR:OR;AND:AND', 
+							value:':;OR:OR;AND:AND', 
 							dataEvents: [ { type: 'click', fn: function(e) { selectedCondition.setSeperator(e.target.value); } } ] 
 						} 
 				},
