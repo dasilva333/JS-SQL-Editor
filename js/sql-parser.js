@@ -149,7 +149,7 @@
 
     SQL_SORT_ORDERS = ['ASC', 'DESC'];
 
-    SQL_OPERATORS = ['=', '>', '<', 'LIKE', 'IS NOT', 'IS'];
+    SQL_OPERATORS = ['=', '>', '<', 'LIKE', 'IS NOT', 'IS', "!=", "<>"];
 
     SQL_CONDITIONALS = ['AND', 'OR'];
 

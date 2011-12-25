@@ -60,13 +60,13 @@
       return " DateAdd(d," + this.getComparison()() + "," + this.getColumnName()() + " ) > GetDate() ";
     },
     "Contains Data": function() {
-      return " != '' OR IS NOT NULL  ";
+      return " != '' OR " + this.getColumnName()() + " IS NOT NULL  ";
     },
     "Days Equal": function() {
       return " DAY( " + this.getColumnName()() + " ) = ";
     },
     "Does Not Contain Data": function() {
-      return " = '' OR IS NULL ";
+      return " = ''  OR " + this.getColumnName()() + " IS NULL ";
     },
     "Equal To": function() {
       return " = " + this.getFormattedComparison();
@@ -195,9 +195,6 @@
     };
 
     Condition.prototype.operatorTemplate = function(value, options) {
-      setTimeout(function() {
-        return ko.applyBindings(Main, $("#" + options.id).parent().get(0));
-      }, 250);
       return '<select data-bind="value: selectedCondition.getOperator(), options: selectedCondition.getOperators(), optionsCaption: defaultCaption"></select>';
     };
 
@@ -227,9 +224,6 @@
     };
 
     Condition.prototype.comparisonTemplate = function(value, options) {
-      setTimeout(function() {
-        return ko.applyBindings(Main, $("#" + options.id).parent().get(0));
-      }, 250);
       return '<select data-bind="valueUpdate: \'change\', options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select><input type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()">';
     };
 
@@ -264,9 +258,6 @@
     };
 
     Condition.prototype.stringTemplate = function(value, options) {
-      setTimeout(function() {
-        return ko.applyBindings(Main, $("#" + options.id).parent().get(0));
-      }, 250);
       return '<span data-bind="text: selectedCondition.toString()"></span>';
     };
 
@@ -313,6 +304,7 @@
 
     function App() {
       this.selectCondition = __bind(this.selectCondition, this);
+      this.onCellSelect = __bind(this.onCellSelect, this);
       this.viewStatement = __bind(this.viewStatement, this);
       var n, t;
       this.conditions = ko.observableArray(dataArr);
@@ -348,29 +340,31 @@
         try {
           SQLParser.parse(statement).where.conditions;
         } catch (error) {
-          statement = error + " " + statement;
+          statement = '<span class="ui-state-error">' + error + '</span>';
         }
         return statement;
       });
+    };
+
+    App.prototype.onCellSelect = function() {
+      var _this = this;
+      if (this.selectedCondition.ID !== "new_row") {
+        return setTimeout(function() {
+          return ko.applyBindings(_this, $("#" + _this.selectedCondition.ID).parent().get(0));
+        }, 250);
+      }
     };
 
     App.prototype.gridComplete = function() {
       setTimeout(function() {
         return ko.applyBindings(Main, $("#navPager_right").parent().get(0));
       }, 250);
-      return $("#navPager_right").html('<span data-bind="text: viewStatement()"></span>');
+      return $("#navPager_right").html('<span data-bind="html: viewStatement()"></span>');
     };
 
     App.prototype.selectCondition = function(selectedItem) {
-      /*
-          if selectedItem.ID is "new_row"
-            item = emptyCondition
-          else
-            item = selectedItem;  
-          item = $.extend( new Condition(item), item )  
-          console.log(item)  
-          ko.mapping.fromJS(item , @selectedCondition)
-      */      return this.selectedCondition = new Condition(selectedItem);
+      this.selectedCondition = selectedItem;
+      return ko.mapping.fromJS(selectedItem, this.selectedCondition);
     };
 
     return App;

@@ -14,4 +14,4 @@ html, body {
 .ui-tabs-selected .ui-tabs-close {display: block;}
 .ui-layout-west .ui-jqgrid tr.jqgrow td { border-bottom: 0px none;}
 .ui-datepicker {z-index:1200;}
-select.dropDown, select.dropDown option  { width:30px; text-align:center; }
+span.ui-state-error { padding:2px; }

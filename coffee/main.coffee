@@ -47,9 +47,9 @@ columnTypes =
 
 operatorDefinitions = 
     "After Next [Days]": -> " DateAdd(d," + @getComparison()() + "," + @getColumnName()() + " ) > GetDate() "
-    "Contains Data": -> " != '' OR IS NOT NULL  "
+    "Contains Data": -> " != '' OR " + @getColumnName()() + " IS NOT NULL  "
     "Days Equal": -> " DAY( " + @getColumnName()() + " ) = "
-    "Does Not Contain Data": -> " = '' OR IS NULL "
+    "Does Not Contain Data": -> " = ''  OR " + @getColumnName()() + " IS NULL "
     "Equal To": -> " = " + @getFormattedComparison()
     "Months Equals [number]": -> " MONTH( " + @getColumnName()() + " ) = "
     "Not Equal To": -> " != " + @getFormattedComparison() 
@@ -124,9 +124,6 @@ class Condition
     operator for operator of columnTypes[ @getDataType() ]
 
   operatorTemplate: (value, options) ->
-    setTimeout( ->
-      ko.applyBindings(Main, $("#" + options.id).parent().get(0))
-    ,250)
     '<select data-bind="value: selectedCondition.getOperator(), options: selectedCondition.getOperators(), optionsCaption: defaultCaption"></select>';
  
   getComparison: ->
@@ -149,9 +146,6 @@ class Condition
     columnTypes[ @getDataType() ][ @getOperator()() ]
 
   comparisonTemplate: (value, options) ->
-    setTimeout( ->
-      ko.applyBindings(Main, $("#" + options.id).parent().get(0))
-    ,250)
     '<select data-bind="valueUpdate: \'change\', options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select><input type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()">'
 
   showPresetComparisons: ->
@@ -180,9 +174,6 @@ class Condition
     x  
   
   stringTemplate: (value, options) ->
-    setTimeout( ->
-      ko.applyBindings(Main, $("#" + options.id).parent().get(0))
-    ,250)
     '<span data-bind="text: selectedCondition.toString()"></span>'  
     
   toString: =>
@@ -219,35 +210,31 @@ class App
   
   getGridColumns: ->
     @columns().join(";")
-    
+      
   viewStatement: =>
     ko.computed =>
       statement = "SELECT * FROM Contacts WHERE " + @conditions().join("")
       try
         SQLParser.parse(statement).where.conditions
       catch error
-        statement = error + " " + statement
-
+        statement = '<span class="ui-state-error">' + error + '</span>'
       statement  
   
+  onCellSelect: =>
+    if (@selectedCondition.ID isnt "new_row")
+      setTimeout( =>
+        ko.applyBindings @, $("#" + @selectedCondition.ID).parent().get 0
+      ,250)   
+        
   gridComplete: ->
     setTimeout( ->
       ko.applyBindings Main, $("#navPager_right").parent().get 0
     ,250)    
-    $("#navPager_right").html '<span data-bind="text: viewStatement()"></span>'
+    $("#navPager_right").html '<span data-bind="html: viewStatement()"></span>'
   
   selectCondition: (selectedItem) =>
-    ## console.log(" blah ")
-    ###
-    if selectedItem.ID is "new_row"
-      item = emptyCondition
-    else
-      item = selectedItem;  
-    item = $.extend( new Condition(item), item )  
-    console.log(item)  
-    ko.mapping.fromJS(item , @selectedCondition)
-    ###
-    @selectedCondition = new Condition(selectedItem)
+    @selectedCondition = selectedItem 
+    ko.mapping.fromJS(selectedItem, @selectedCondition)
     
   ########
   ##add: ->
