@@ -46,7 +46,7 @@ columnTypes =
     "Equal To": ["True", "False"]
 
 operatorDefinitions = 
-    "After Next [Days]": -> " DateAdd(d," + @getComparison()() + "," + @getColumnName()() + " ) > GetDate() "
+    "After Next [Days]": -> " DateAdd(d," + @getComparison()() + "," + @getColumnName()() + " ) > GetDate"
     "Contains Data": -> " != '' OR " + @getColumnName()() + " IS NOT NULL  "
     "Days Equal": -> " DAY( " + @getColumnName()() + " ) = "
     "Does Not Contain Data": -> " = ''  OR " + @getColumnName()() + " IS NULL "
@@ -75,19 +75,20 @@ class Condition
   constructor: (params) ->
     @ID = params['ID'] || 0
     @startParen = ko.observable params['('] || ""
-    this['('] = params['(']
+    this['('] = params['('] || ""
     @columnName = ko.observable params['Column'] || ""
-    @Column = params['Column'] 
+    @Column = params['Column'] || ""
     @operator = ko.observable params['Operator'] || ""
-    @Operator = params['Operator'] 
+    @Operator = params['Operator'] || ""
     @comparison = ko.observable params['Comparison'] || ""
-    @Comparison = params['Comparison'] 
+    @Comparison = params['Comparison'] || ""
     @presetComparison = ko.observable @comparison()
     @endParen = ko.observable params[')'] || ""
-    this[')'] = params[')'] 
+    this[')'] = params[')'] || ""
     @seperator = ko.observable params['Seperator'] || ""
-    @Seperator = params['Seperator']
+    @Seperator = params['Seperator'] || ""
     @Statement = @toString()
+    console.log params
      
   setStartParen: (parens) ->
     @startParen parens
@@ -128,11 +129,15 @@ class Condition
     @operator
   
   getOperators: ->
-    operator for operator of columnTypes[ @getDataType() ]
+    if (@getDataType() of columnTypes)
+      operator for operator of columnTypes[ @getDataType() ]
+    else
+      [""]  
 
-  operatorTemplate: (value, options) ->
-    '<select data-bind="value: selectedCondition.getOperator(), options: selectedCondition.getOperators(), optionsCaption: defaultCaption"></select>';
- 
+  operatorTemplate: (value, options) =>
+    '<select data-bind="options: selectedCondition.getOperators(), value: selectedCondition.operator, optionsCaption: defaultCaption"></select>'
+    ##'<input data-bind="value: selectedCondition.getOperator()">'
+    
   getComparison: ->
     @Comparison = @comparison()
     @comparison
@@ -151,17 +156,22 @@ class Condition
     return x
     
   getComparisons: ->
-    columnTypes[ @getDataType() ][ @getOperator()() ]
-
+    if (@getDataType() of columnTypes && @getOperator()() of columnTypes[ @getDataType() ] )
+      comps = columnTypes[ @getDataType() ][ @getOperator()() ]
+    else
+      comps = []
   getPresetComparison: ->
-    
     if (@getDataType() is 'bit')
-      @setComparison @presetComparison()  
+      @setComparison @presetComparison()
+    if (@getDataType() is 'datetime' and @presetComparison() is "Today")
+      @setComparison "GetDate"
     @presetComparison
   
   comparisonTemplate: (value, options) ->
+    ##"></select><input type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()
     '<select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select><input type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()">'
-
+    ##"<input>"
+    
   showPresetComparisons: ->
     @getComparisons().length > 0
   
@@ -180,13 +190,17 @@ class Condition
     @seperator()
     
   getDataType: ->
-    defaultColumns[ @columnName() ]
+    if (@columnName() of defaultColumns)
+      dataType = defaultColumns[ @columnName() ]
+    else  
+      dataType = ""
+    dataType
       
   getOpAndComp: =>
-    if (@operator() is "")
+    if (@operator() is "" or typeof @operator() is "undefined")
       x = ""
     else  
-      x = operatorDefinitions[@operator()].apply(@)
+      x = operatorDefinitions[@getOperator()()].apply(@)
     x  
   
   stringTemplate: (value, options) ->
@@ -194,6 +208,8 @@ class Condition
     
   toString: =>
     @Statement = " #{ @startParen() } #{ @columnName() } #{ @getOpAndComp() } #{ @endParen() } #{ @getSeperator() } "
+
+window.Condition = Condition;
 
 class Column
 
@@ -225,7 +241,7 @@ class App
     @columns
   
   getGridColumns: ->
-    @columns().join(";")
+    ":;" + @columns().join(";")
       
   viewStatement: =>
     ko.computed =>
@@ -237,10 +253,14 @@ class App
       statement  
   
   onCellSelect: =>
+    console.log("onCellSelect")
+    console.log @selectedCondition.ID 
     if (@selectedCondition.ID isnt "new_row")
       setTimeout( =>
         ko.applyBindings @, $("#" + @selectedCondition.ID).parent().get 0
-      ,250)   
+      ,250)
+    else
+      console.log 'do ur thing dude'  
         
   gridComplete: ->
     setTimeout( ->
@@ -252,20 +272,20 @@ class App
     @selectedCondition = selectedItem 
     ko.mapping.fromJS(selectedItem, @selectedCondition)
     
-  ########
-  ##add: ->
-  ##    if (!@selectedCondition.ID())
-  ##      newId = @conditions().length + 1;
-  ##      @selectedCondition.ID(newId);
-  ##      @conditions.push(ko.mapping.toJS(@selectedCondition));    
-  ##    ko.mapping.fromJS(emptyCondition, @selectedCondition);  
-  #######
-emptyCondition = {
+  add: ->
+      console.log("i am being used?")
+      if (!@selectedCondition.ID())
+        newId = @conditions().length + 1;
+        @selectedCondition.ID(newId);
+        @conditions.push(ko.mapping.toJS(@selectedCondition));    
+      ko.mapping.fromJS(emptyCondition, @selectedCondition);  
+  
+window.emptyCondition = {
   "ID": "new_row",
   "(": "",
   "Column": "",
   "Operator": "",
-  "Value": "",
+  "Comparison": "",
   ")": "",
   "Seperator": "",
   "Statement": ""
@@ -275,7 +295,7 @@ dataArr = [
   new Condition({
     "ID": 1,
     "(": "(",
-    "Column": "FirstName",
+    "Column": "LastUpdated",
     "Operator": "Equal To",
     "Comparison": "richard",
     ")": ")",

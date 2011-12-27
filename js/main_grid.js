@@ -39,9 +39,21 @@
 				}, 
 				gridComplete: value.gridComplete,
 				onCellSelect: value.onCellSelect,
-				errorCell: function(){
+				afterInsertRow: function(){
+					console.log("before " + Main.selectedCondition.Operator) 
 					
-					console.log("errorCell")
+					setTimeout(function(){
+						try {
+							console.log("emptyCondition " + emptyCondition.Operator)
+							Main.selectedCondition = new Condition(emptyCondition)
+							console.log("after " + Main.selectedCondition.Operator)	
+							ko.applyBindings(Main, $("#" + Main.selectedCondition.ID).parent().get(0))
+						    
+						}catch(e){
+							console.log(e)
+						}
+						
+					},250)
 				},
 				editurl: "grid.html",
 				caption: value.caption,
@@ -55,13 +67,25 @@
 				data: ko.utils.unwrapObservable(value.data).slice(0)
 			})
 			jQuery(element).jqGrid('navGrid',"#navPager",
-					{edit:false,add:false,del:false,search:false,nav:false,refresh:false}, //options
-					{reloadAfterSubmit:false}, // edit options
-					{reloadAfterSubmit:false}, // add options
+					{edit:false,add:false,del:false,search:false,nav:false,refresh:false,addfunc: function(){
+						console.log("i should do nothing now")
+						return false;
+					}}, //options
+					{reloadAfterSubmit:false,addfunc: function(){
+						console.log("i should do nothing now")
+						return false;
+					}}, // edit options
+					{reloadAfterSubmit:false,addfunc: function(){
+						console.log("i should do nothing now")
+						return false;
+					}}, // add options
 					{reloadAfterSubmit:false}, // del options
 					{} // search options
 			); 
-			jQuery(element).jqGrid('inlineNav',"#navPager", {edit:false,add:true,del:false,search:false,nav:false,refresh:false});
+			jQuery(element).jqGrid('inlineNav',"#navPager", {edit:false,add:true,del:false,search:false,nav:false,refresh:false,addfunc: function(){
+				console.log("i should do nothing now")
+				return false;
+			}});
 		},
 		update: function (element, valueAccessor) {
 			var value = valueAccessor();

@@ -38,6 +38,8 @@
       if (output == null) output = true;
       if (!(match = regex.exec(this.chunk))) return 0;
       partMatch = match[part];
+      //console.log(name)
+      //console.log(partMatch)
       if (output) this.token(name, partMatch);
       return match[lengthPart].length;
     };
@@ -104,17 +106,21 @@
       return this.tokenizeFromRegex('SEPARATOR', SEPARATOR);
     };
 
-    Lexer.prototype.literalToken = function() {
-      return this.tokenizeFromRegex('LITERAL', LITERAL, 1, 0);
-    };
+    Lexer.prototype.literalToken = function() {	
+        x = this.tokenizeFromRegex('LITERAL', LITERAL, 1, 0);
+        //console.log(x)
+      	return x;
+      };
 
-    Lexer.prototype.numberToken = function() {
-      return this.tokenizeFromRegex('NUMBER', NUMBER);
-    };
+      Lexer.prototype.numberToken = function() {
+        return this.tokenizeFromRegex('NUMBER', NUMBER);
+      };
 
-    Lexer.prototype.stringToken = function() {
-      return this.tokenizeFromRegex('STRING', STRING, 1, 0) || this.tokenizeFromRegex('DBLSTRING', DBLSTRING, 1, 0);
-    };
+      Lexer.prototype.stringToken = function() {
+      	x = this.tokenizeFromRegex('STRING', STRING, 1, 0) || this.tokenizeFromRegex('DBLSTRING', DBLSTRING, 1, 0);
+      	//console.log(x)
+      	return x;
+      };
 
     Lexer.prototype.parensToken = function() {
       return this.tokenizeFromRegex('LEFT_PAREN', /^\(/) || this.tokenizeFromRegex('RIGHT_PAREN', /^\)/);
@@ -799,7 +805,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 
     return Order;
 
-  })();
+  })(); 
 
   exports.OrderArgument = OrderArgument = (function() {
 
