@@ -1,5 +1,5 @@
 (function() {
-  var App, Column, Condition, columnTypes, dataArr, defaultColumns, operatorDefinitions;
+  var App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
@@ -275,23 +275,19 @@
     };
 
     Condition.prototype.getDataType = function() {
-      var dataType;
       if (this.columnName() in defaultColumns) {
-        dataType = defaultColumns[this.columnName()];
+        return defaultColumns[this.columnName()];
       } else {
-        dataType = "";
+        return "";
       }
-      return dataType;
     };
 
     Condition.prototype.getOpAndComp = function() {
-      var x;
       if (this.operator() === "" || typeof this.operator() === "undefined") {
-        x = "";
+        return "";
       } else {
-        x = operatorDefinitions[this.getOperator()()].apply(this);
+        return operatorDefinitions[this.getOperator()()].apply(this);
       }
-      return x;
     };
 
     Condition.prototype.stringTemplate = function(value, options) {
@@ -306,7 +302,7 @@
 
   })();
 
-  window.Condition = Condition;
+  Condition = Condition;
 
   Column = (function() {
 
@@ -343,6 +339,7 @@
 
     function App() {
       this.selectCondition = __bind(this.selectCondition, this);
+      this.afterInsertRow = __bind(this.afterInsertRow, this);
       this.onCellSelect = __bind(this.onCellSelect, this);
       this.viewStatement = __bind(this.viewStatement, this);
       var n, t;
@@ -398,6 +395,14 @@
       }
     };
 
+    App.prototype.afterInsertRow = function() {
+      var _this = this;
+      return setTimeout(function() {
+        _this.selectedCondition = new Condition(emptyCondition);
+        return ko.applyBindings(Main, $("#" + _this.selectedCondition.ID).parent().get(0));
+      }, 250);
+    };
+
     App.prototype.gridComplete = function() {
       setTimeout(function() {
         return ko.applyBindings(Main, $("#navPager_right").parent().get(0));
@@ -425,7 +430,7 @@
 
   })();
 
-  window.emptyCondition = {
+  emptyCondition = {
     "ID": "new_row",
     "(": "",
     "Column": "",

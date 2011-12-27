@@ -136,7 +136,6 @@ class Condition
 
   operatorTemplate: (value, options) =>
     '<select data-bind="options: selectedCondition.getOperators(), value: selectedCondition.operator, optionsCaption: defaultCaption"></select>'
-    ##'<input data-bind="value: selectedCondition.getOperator()">'
     
   getComparison: ->
     @Comparison = @comparison()
@@ -160,6 +159,7 @@ class Condition
       comps = columnTypes[ @getDataType() ][ @getOperator()() ]
     else
       comps = []
+      
   getPresetComparison: ->
     if (@getDataType() is 'bit')
       @setComparison @presetComparison()
@@ -168,9 +168,7 @@ class Condition
     @presetComparison
   
   comparisonTemplate: (value, options) ->
-    ##"></select><input type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()
     '<select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select><input type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()">'
-    ##"<input>"
     
   showPresetComparisons: ->
     @getComparisons().length > 0
@@ -191,25 +189,23 @@ class Condition
     
   getDataType: ->
     if (@columnName() of defaultColumns)
-      dataType = defaultColumns[ @columnName() ]
+      defaultColumns[ @columnName() ]
     else  
-      dataType = ""
-    dataType
+      ""
       
   getOpAndComp: =>
     if (@operator() is "" or typeof @operator() is "undefined")
-      x = ""
+      ""
     else  
-      x = operatorDefinitions[@getOperator()()].apply(@)
-    x  
-  
+      operatorDefinitions[@getOperator()()].apply(@)
+      
   stringTemplate: (value, options) ->
     '<span data-bind="text: selectedCondition.toString()"></span>'  
     
   toString: =>
     @Statement = " #{ @startParen() } #{ @columnName() } #{ @getOpAndComp() } #{ @endParen() } #{ @getSeperator() } "
 
-window.Condition = Condition;
+Condition = Condition;
 
 class Column
 
@@ -261,7 +257,15 @@ class App
       ,250)
     else
       console.log 'do ur thing dude'  
-        
+  
+  afterInsertRow: =>
+    setTimeout( =>
+        @selectedCondition = new Condition emptyCondition
+        ##@selectedCondition.ID = @conditions().length + 1; 
+        ##@conditions.push(@selectedCondition)
+        ko.applyBindings(Main, $("#" + @selectedCondition.ID).parent().get(0))
+    ,250) 
+
   gridComplete: ->
     setTimeout( ->
       ko.applyBindings Main, $("#navPager_right").parent().get 0
@@ -280,7 +284,7 @@ class App
         @conditions.push(ko.mapping.toJS(@selectedCondition));    
       ko.mapping.fromJS(emptyCondition, @selectedCondition);  
   
-window.emptyCondition = {
+emptyCondition = {
   "ID": "new_row",
   "(": "",
   "Column": "",
