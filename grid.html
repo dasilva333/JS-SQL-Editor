@@ -59,14 +59,14 @@
 				{ 
 					name: 'Operator', index: 'Operator', width: 150, editable: true, edittype: 'custom', 
 					editoptions: { 
-						custom_element: selectedCondition.operatorTemplate, 
-						custom_value: selectedCondition.getOperator()()
+						custom_element: Main.selectedCondition.operatorTemplate, 
+						custom_value: Main.selectedCondition.getOperator
 					}  
 				},
 				{ name: 'Comparison', index: 'Comparison', width: 200, editable: true, edittype: 'custom', 
 					editoptions: { 
-						custom_element: selectedCondition.comparisonTemplate, 
-						custom_value: selectedCondition.getComparison()()
+						custom_element: Main.selectedCondition.comparisonTemplate, 
+						custom_value: Main.selectedCondition.getComparison()()
 					}   
 				
 				},

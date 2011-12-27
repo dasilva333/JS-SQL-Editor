@@ -1,6 +1,6 @@
 (function() {
-  var App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
 
@@ -189,9 +189,20 @@
       return this.columnName;
     };
 
-    Condition.prototype.getOperator = function() {
-      this.Operator = this.operator();
-      return this.operator;
+    Condition.prototype.getOperator = function(elem, op, value) {
+      var operation;
+      console.log(arguments);
+      operation = op || "";
+      if (operation === 'get') {
+        console.log("operation is get");
+        return $(elem).val();
+      } else if (operation === 'set') {
+        console.log("set your stuff");
+        return "";
+      } else {
+        this.Operator = this.operator();
+        return this.operator;
+      }
     };
 
     Condition.prototype.getOperators = function() {
@@ -391,7 +402,7 @@
           return ko.applyBindings(_this, $("#" + _this.selectedCondition.ID).parent().get(0));
         }, 250);
       } else {
-        return console.log('do ur thing dude');
+        return false;
       }
     };
 
@@ -411,8 +422,12 @@
     };
 
     App.prototype.selectCondition = function(selectedItem) {
-      this.selectedCondition = selectedItem;
-      return ko.mapping.fromJS(selectedItem, this.selectedCondition);
+      console.log("selectCondition");
+      if (selectedItem.ID !== "new_row") {
+        this.selectedCondition = selectedItem;
+        ko.mapping.fromJS(selectedItem, this.selectedCondition);
+      }
+      return true;
     };
 
     App.prototype.add = function() {

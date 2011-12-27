@@ -18,6 +18,7 @@
 				cmTemplate: { align: "center" },
 				pager: "#navPager",
 				onSelectRow: function (id) {
+					console.log("onSelectRow")
 					var item = $(element).jqGrid('getLocalRow', id);
 					value.selectItem(item);
 					if (id && id !== lastsel) {
@@ -37,6 +38,7 @@
 						});
 						lastsel = id;
 					}
+					return true;
 				}, 
 				beforeProcessing: function(){
 					console.log("beforeProcessing")
@@ -44,7 +46,7 @@
 				gridComplete: value.gridComplete,
 				onCellSelect: value.onCellSelect,
 				afterInsertRow: value.afterInsertRow,
-				editurl: "grid.html",
+				editurl: "clientArray",
 				caption: value.caption,
 				//disable paging
 				rowList: [],        // disable page size dropdown

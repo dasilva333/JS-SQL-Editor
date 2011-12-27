@@ -124,9 +124,18 @@ class Condition
   getColumnName: ->
     @columnName
     
-  getOperator: ->
-    @Operator = @operator()
-    @operator
+  getOperator: (elem, op, value) ->
+    console.log arguments
+    operation = op || "";
+    if(operation is 'get')
+      console.log("operation is get")
+      $(elem).val();
+    else if(operation is 'set')
+      console.log("set your stuff")
+      ""
+    else
+      @Operator = @operator()
+      @operator  
   
   getOperators: ->
     if (@getDataType() of columnTypes)
@@ -256,7 +265,7 @@ class App
         ko.applyBindings @, $("#" + @selectedCondition.ID).parent().get 0
       ,250)
     else
-      console.log 'do ur thing dude'  
+      false;  
   
   afterInsertRow: =>
     setTimeout( =>
@@ -273,8 +282,11 @@ class App
     $("#navPager_right").html '<span data-bind="html: viewStatement()"></span>'
   
   selectCondition: (selectedItem) =>
-    @selectedCondition = selectedItem 
-    ko.mapping.fromJS(selectedItem, @selectedCondition)
+    console.log "selectCondition"
+    if (selectedItem.ID isnt "new_row")
+      @selectedCondition = selectedItem 
+      ko.mapping.fromJS(selectedItem, @selectedCondition)
+    true
     
   add: ->
       console.log("i am being used?")
