@@ -26,7 +26,7 @@
 						jQuery(element).jqGrid('editRow', id, {
 							keys: true,
 							aftersavefunc: function(){
-								console.log("aftersavefunc")
+								console.log("after edit func")
 								var oldItem = ko.utils.arrayFirst(dataArr, function (obj) { return obj.ID == id;  });
 								var newItem = $(element).jqGrid('getLocalRow', id);
 								if (oldItem !== null) {
@@ -74,7 +74,17 @@
 				   cancel: true,
 				   cancelicon:"ui-icon-cancel",
 				   addParams : {useFormatter : false},
-				   editParams : {}
+				   editParams : {
+					   aftersavefunc: function(){
+						   console.log("after save func")
+						   //var newItem = $(element).jqGrid('getLocalRow', "new_row");
+						   var newItem = Main.selectedCondition;
+						   console.log(newItem)
+						   newItem.ID = dataArr.length + 1; 
+						   value.data.unshift(newItem);
+						   lastsel = null;
+					   }
+				   }
 				});
 		},
 		update: function (element, valueAccessor) {

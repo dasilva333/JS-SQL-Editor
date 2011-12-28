@@ -143,7 +143,6 @@
       this.seperator = ko.observable(params['Seperator'] || "");
       this.Seperator = params['Seperator'] || "";
       this.Statement = this.toString();
-      console.log(params);
     }
 
     Condition.prototype.setStartParen = function(parens) {
@@ -191,7 +190,6 @@
 
     Condition.prototype.getOperator = function(elem, op, value) {
       var operation;
-      console.log(arguments);
       operation = op || "";
       if (operation === 'get') {
         return $(elem).val();
@@ -397,8 +395,6 @@
 
     App.prototype.onCellSelect = function() {
       var _this = this;
-      console.log("onCellSelect");
-      console.log(this.selectedCondition.ID);
       if (this.selectedCondition.ID !== "new_row") {
         return setTimeout(function() {
           return ko.applyBindings(_this, $("#" + _this.selectedCondition.ID).parent().get(0));
@@ -424,7 +420,6 @@
     };
 
     App.prototype.selectCondition = function(selectedItem) {
-      console.log("selectCondition");
       if (selectedItem.ID !== "new_row") {
         this.selectedCondition = selectedItem;
         ko.mapping.fromJS(selectedItem, this.selectedCondition);

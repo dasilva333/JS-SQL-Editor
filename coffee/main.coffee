@@ -88,7 +88,6 @@ class Condition
     @seperator = ko.observable params['Seperator'] || ""
     @Seperator = params['Seperator'] || ""
     @Statement = @toString()
-    console.log params
      
   setStartParen: (parens) ->
     @startParen parens
@@ -125,7 +124,6 @@ class Condition
     @columnName
     
   getOperator: (elem, op, value) ->
-    console.log arguments
     operation = op || "";
     if(operation is 'get')
       $(elem).val();
@@ -257,9 +255,7 @@ class App
         statement = '<span class="ui-state-error">' + error + '</span>'
       statement  
   
-  onCellSelect: =>
-    console.log("onCellSelect")
-    console.log @selectedCondition.ID 
+  onCellSelect: => 
     if (@selectedCondition.ID isnt "new_row")
       setTimeout( =>
         ko.applyBindings @, $("#" + @selectedCondition.ID).parent().get 0
@@ -270,8 +266,6 @@ class App
   afterInsertRow: =>
     setTimeout( =>
         @selectedCondition = new Condition emptyCondition
-        ##@selectedCondition.ID = @conditions().length + 1; 
-        ##@conditions.push(@selectedCondition)
         ko.applyBindings(Main, $("#" + @selectedCondition.ID).parent().get(0))
     ,250) 
 
@@ -282,7 +276,6 @@ class App
     $("#navPager_right").html '<span data-bind="html: viewStatement()"></span>'
   
   selectCondition: (selectedItem) =>
-    console.log "selectCondition"
     if (selectedItem.ID isnt "new_row")
       @selectedCondition = selectedItem 
       ko.mapping.fromJS(selectedItem, @selectedCondition)
