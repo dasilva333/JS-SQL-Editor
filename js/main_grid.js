@@ -18,7 +18,6 @@
 				cmTemplate: { align: "center" },
 				pager: "#navPager",
 				onSelectRow: function (id) {
-					console.log("onSelectRow")
 					var item = $(element).jqGrid('getLocalRow', id);
 					value.selectItem(item);
 					if (id && id !== lastsel) {
@@ -26,7 +25,6 @@
 						jQuery(element).jqGrid('editRow', id, {
 							keys: true,
 							aftersavefunc: function(){
-								console.log("after edit func")
 								var oldItem = ko.utils.arrayFirst(dataArr, function (obj) { return obj.ID == id;  });
 								var newItem = $(element).jqGrid('getLocalRow', id);
 								if (oldItem !== null) {
@@ -40,9 +38,6 @@
 					}
 					return true;
 				}, 
-				beforeProcessing: function(){
-					console.log("beforeProcessing")
-				},
 				gridComplete: value.gridComplete,
 				onCellSelect: value.onCellSelect,
 				afterInsertRow: value.afterInsertRow,
@@ -76,10 +71,9 @@
 				   addParams : {useFormatter : false},
 				   editParams : {
 					   aftersavefunc: function(){
-						   console.log("after save func")
-						   //var newItem = $(element).jqGrid('getLocalRow', "new_row");
-						   var newItem = Main.selectedCondition;
-						   console.log(newItem)
+						   //var newItem = value.selectedItem; //this one should def work
+						   //var newItem = $(element).jqGrid('getLocalRow', "new_row"); //this one only gets the basic values
+						   var newItem = Main.selectedCondition; //fix this so it doesn't reference Main directly
 						   newItem.ID = dataArr.length + 1; 
 						   value.data.unshift(newItem);
 						   lastsel = null;

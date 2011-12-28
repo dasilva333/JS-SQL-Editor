@@ -291,14 +291,6 @@ class App
       @selectedCondition = selectedItem 
       ko.mapping.fromJS(selectedItem, @selectedCondition)
     true
-    
-  add: ->
-      console.log("i am being used?")
-      if (!@selectedCondition.ID())
-        newId = @conditions().length + 1;
-        @selectedCondition.ID(newId);
-        @conditions.push(ko.mapping.toJS(@selectedCondition));    
-      ko.mapping.fromJS(emptyCondition, @selectedCondition);  
   
 emptyCondition = {
   "ID": "new_row",

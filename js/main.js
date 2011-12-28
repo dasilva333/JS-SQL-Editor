@@ -443,17 +443,6 @@
       return true;
     };
 
-    App.prototype.add = function() {
-      var newId;
-      console.log("i am being used?");
-      if (!this.selectedCondition.ID()) {
-        newId = this.conditions().length + 1;
-        this.selectedCondition.ID(newId);
-        this.conditions.push(ko.mapping.toJS(this.selectedCondition));
-      }
-      return ko.mapping.fromJS(emptyCondition, this.selectedCondition);
-    };
-
     return App;
 
   })();
