@@ -128,11 +128,7 @@ class Condition
     console.log arguments
     operation = op || "";
     if(operation is 'get')
-      console.log("operation is get")
       $(elem).val();
-    else if(operation is 'set')
-      console.log("set your stuff")
-      ""
     else
       @Operator = @operator()
       @operator  
@@ -146,9 +142,13 @@ class Condition
   operatorTemplate: (value, options) =>
     '<select data-bind="options: selectedCondition.getOperators(), value: selectedCondition.operator, optionsCaption: defaultCaption"></select>'
     
-  getComparison: ->
-    @Comparison = @comparison()
-    @comparison
+  getComparison: (elem, op, value) ->
+    operation = op || "";
+    if(operation is 'get')
+      $(elem).filter("input").val();
+    else
+      @Comparison = @comparison()
+      @comparison    
  
   getFormattedComparison: ->
     x = null

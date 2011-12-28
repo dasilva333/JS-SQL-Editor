@@ -1,6 +1,6 @@
 (function() {
-  var App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
 
@@ -194,11 +194,7 @@
       console.log(arguments);
       operation = op || "";
       if (operation === 'get') {
-        console.log("operation is get");
         return $(elem).val();
-      } else if (operation === 'set') {
-        console.log("set your stuff");
-        return "";
       } else {
         this.Operator = this.operator();
         return this.operator;
@@ -222,9 +218,15 @@
       return '<select data-bind="options: selectedCondition.getOperators(), value: selectedCondition.operator, optionsCaption: defaultCaption"></select>';
     };
 
-    Condition.prototype.getComparison = function() {
-      this.Comparison = this.comparison();
-      return this.comparison;
+    Condition.prototype.getComparison = function(elem, op, value) {
+      var operation;
+      operation = op || "";
+      if (operation === 'get') {
+        return $(elem).filter("input").val();
+      } else {
+        this.Comparison = this.comparison();
+        return this.comparison;
+      }
     };
 
     Condition.prototype.getFormattedComparison = function() {
