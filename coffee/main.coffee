@@ -82,7 +82,7 @@ class Condition
     @Operator = params['Operator'] || ""
     @comparison = ko.observable params['Comparison'] || ""
     @Comparison = params['Comparison'] || ""
-    @presetComparison = ko.observable @comparison()
+    @presetComparison = ko.observable ""
     @endParen = ko.observable params[')'] || ""
     this[')'] = params[')'] || ""
     @seperator = ko.observable params['Seperator'] || ""
@@ -157,6 +157,8 @@ class Condition
         x = 1
       else  
         x = 0;  
+    else if (@getDataType() is 'datetime' and @presetComparison() is "")
+      x = @comparison().singleQuoted()
     else
       x = @comparison()
     return x
@@ -170,8 +172,8 @@ class Condition
   getPresetComparison: ->
     if (@getDataType() is 'bit')
       @setComparison @presetComparison()
-    if (@getDataType() is 'datetime' and @presetComparison() is "Today")
-      @setComparison "GetDate"
+    if (@getDataType() is 'datetime' and @presetComparison() isnt "")
+      @setComparison @presetComparison() ##Once I figure out the parser bug I'll set it to @Today
     @presetComparison
   
   comparisonTemplate: (value, options) ->
@@ -206,12 +208,21 @@ class Condition
     else  
       operatorDefinitions[@getOperator()()].apply(@)
       
-  stringTemplate: (value, options) ->
-    '<span data-bind="text: selectedCondition.toString()"></span>'  
-    
+  statementTemplate: ->
+    '<span data-bind="text: selectedCondition.toString()"></span><input type="hidden" data-bind="value: selectedCondition.toString()">'  
+  
+  getStatement: (elem, op, value) ->
+    operation = op || "";
+    if(operation is 'get')
+      $(elem).filter("input").val();
+    else
+      @Statement = @toString()
+      @toString()    
+        
   toString: =>
     @Statement = " #{ @startParen() } #{ @columnName() } #{ @getOpAndComp() } #{ @endParen() } #{ @getSeperator() } "
-
+    @Statement
+    
 Condition = Condition;
 
 class Column
@@ -266,12 +277,12 @@ class App
   afterInsertRow: =>
     setTimeout( =>
         @selectedCondition = new Condition emptyCondition
-        ko.applyBindings(Main, $("#" + @selectedCondition.ID).parent().get(0))
+        ko.applyBindings @, $("#" + @selectedCondition.ID).parent().get 0
     ,250) 
 
-  gridComplete: ->
-    setTimeout( ->
-      ko.applyBindings Main, $("#navPager_right").parent().get 0
+  gridComplete: =>
+    setTimeout( =>
+      ko.applyBindings @, $("#navPager_right").parent().get 0
     ,250)    
     $("#navPager_right").html '<span data-bind="html: viewStatement()"></span>'
   

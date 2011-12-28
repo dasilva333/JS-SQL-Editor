@@ -137,7 +137,7 @@
       this.Operator = params['Operator'] || "";
       this.comparison = ko.observable(params['Comparison'] || "");
       this.Comparison = params['Comparison'] || "";
-      this.presetComparison = ko.observable(this.comparison());
+      this.presetComparison = ko.observable("");
       this.endParen = ko.observable(params[')'] || "");
       this[')'] = params[')'] || "";
       this.seperator = ko.observable(params['Seperator'] || "");
@@ -238,6 +238,8 @@
         } else {
           x = 0;
         }
+      } else if (this.getDataType() === 'datetime' && this.presetComparison() === "") {
+        x = this.comparison().singleQuoted();
       } else {
         x = this.comparison();
       }
@@ -257,8 +259,8 @@
       if (this.getDataType() === 'bit') {
         this.setComparison(this.presetComparison());
       }
-      if (this.getDataType() === 'datetime' && this.presetComparison() === "Today") {
-        this.setComparison("GetDate");
+      if (this.getDataType() === 'datetime' && this.presetComparison() !== "") {
+        this.setComparison(this.presetComparison());
       }
       return this.presetComparison;
     };
@@ -301,12 +303,24 @@
       }
     };
 
-    Condition.prototype.stringTemplate = function(value, options) {
-      return '<span data-bind="text: selectedCondition.toString()"></span>';
+    Condition.prototype.statementTemplate = function() {
+      return '<span data-bind="text: selectedCondition.toString()"></span><input type="hidden" data-bind="value: selectedCondition.toString()">';
+    };
+
+    Condition.prototype.getStatement = function(elem, op, value) {
+      var operation;
+      operation = op || "";
+      if (operation === 'get') {
+        return $(elem).filter("input").val();
+      } else {
+        this.Statement = this.toString();
+        return this.toString();
+      }
     };
 
     Condition.prototype.toString = function() {
-      return this.Statement = " " + (this.startParen()) + " " + (this.columnName()) + " " + (this.getOpAndComp()) + " " + (this.endParen()) + " " + (this.getSeperator()) + " ";
+      this.Statement = " " + (this.startParen()) + " " + (this.columnName()) + " " + (this.getOpAndComp()) + " " + (this.endParen()) + " " + (this.getSeperator()) + " ";
+      return this.Statement;
     };
 
     return Condition;
@@ -350,6 +364,7 @@
 
     function App() {
       this.selectCondition = __bind(this.selectCondition, this);
+      this.gridComplete = __bind(this.gridComplete, this);
       this.afterInsertRow = __bind(this.afterInsertRow, this);
       this.onCellSelect = __bind(this.onCellSelect, this);
       this.viewStatement = __bind(this.viewStatement, this);
@@ -408,13 +423,14 @@
       var _this = this;
       return setTimeout(function() {
         _this.selectedCondition = new Condition(emptyCondition);
-        return ko.applyBindings(Main, $("#" + _this.selectedCondition.ID).parent().get(0));
+        return ko.applyBindings(_this, $("#" + _this.selectedCondition.ID).parent().get(0));
       }, 250);
     };
 
     App.prototype.gridComplete = function() {
+      var _this = this;
       setTimeout(function() {
-        return ko.applyBindings(Main, $("#navPager_right").parent().get(0));
+        return ko.applyBindings(_this, $("#navPager_right").parent().get(0));
       }, 250);
       return $("#navPager_right").html('<span data-bind="html: viewStatement()"></span>');
     };
