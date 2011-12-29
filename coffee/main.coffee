@@ -267,12 +267,8 @@ class App
     @contactsModel = defaultColumns.map( (name) ->
       new Column(name, allColumns[name])
     )
-    @contacts.push({
-        FirstName: "Richard",
-        LastUpdated : "02/05/2010",
-        Active: true,
-        EmployeeCount: 2
-    })
+    @previewRecords()
+      
   getConditions: ->
     @conditions
   
@@ -301,6 +297,23 @@ class App
       @selectedCondition = selectedItem 
       ko.mapping.fromJS(selectedItem, @selectedCondition)
     true
+    
+  previewRecords: ->
+    $.ajax(
+      url: "getContactsByQuery.cfm"
+      data:
+        where: @conditions().join("")
+      complete: (data) =>
+        ##TODO, process data into an array. maybe add paged records
+        @contacts.removeAll()
+        for i in [1..10] 
+          @contacts.push(
+              FirstName: "Richard" + i
+              LastUpdated : "02/" + i + "/2010"
+              Active: if Math.random() > 0.5 then true else false
+              EmployeeCount: i * Math.random() 
+          )
+    )
     
   validateSeperator: =>
     if (@getConditions()()[@getConditions()().length - 1] isnt @selectedCondition and @selectedCondition.Seperator is "")

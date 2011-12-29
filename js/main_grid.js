@@ -81,14 +81,21 @@
 					   }
 				   }
 				})
+				.jqGrid('navButtonAdd', value.pager, 
+				 	{ 
+						caption: "Columns", 
+				 		title: "Reorder Columns", 
+				 		onClickButton : function (){ jQuery(element).jqGrid('columnChooser'); } 
+					})
+				
 				.jqGrid('navButtonAdd',value.pager, {
 				   caption:"Preview", 
 				   buttonicon:"ui-icon-search", 
 				   onClickButton: function(){ 
-				     alert("Adding Row");
+					   Main.previewRecords()
 				   }, 
 				   position:"last"
-				})				
+				})
 			} 
 		},
 		update: function (element, valueAccessor) {

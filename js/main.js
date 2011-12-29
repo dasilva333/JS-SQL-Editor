@@ -399,12 +399,7 @@
       this.contactsModel = defaultColumns.map(function(name) {
         return new Column(name, allColumns[name]);
       });
-      this.contacts.push({
-        FirstName: "Richard",
-        LastUpdated: "02/05/2010",
-        Active: true,
-        EmployeeCount: 2
-      });
+      this.previewRecords();
     }
 
     App.prototype.getConditions = function() {
@@ -444,6 +439,30 @@
         ko.mapping.fromJS(selectedItem, this.selectedCondition);
       }
       return true;
+    };
+
+    App.prototype.previewRecords = function() {
+      var _this = this;
+      return $.ajax({
+        url: "getContactsByQuery.cfm",
+        data: {
+          where: this.conditions().join("")
+        },
+        complete: function(data) {
+          var i, _results;
+          _this.contacts.removeAll();
+          _results = [];
+          for (i = 1; i <= 10; i++) {
+            _results.push(_this.contacts.push({
+              FirstName: "Richard" + i,
+              LastUpdated: "02/" + i + "/2010",
+              Active: Math.random() > 0.5 ? true : false,
+              EmployeeCount: i * Math.random()
+            }));
+          }
+          return _results;
+        }
+      });
     };
 
     App.prototype.validateSeperator = function() {
