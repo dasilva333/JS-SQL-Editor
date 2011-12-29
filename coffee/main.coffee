@@ -1,13 +1,8 @@
-window.defaultCaption = "--Select--"
-
-allColumns =
-  "FirstName": "varchar"
-  "EmployeeCount": "int"
-  "LastUpdated": "datetime" 
-  "Active": "bit"
+window.defaultCaption = "--Select--"  
+window.COLUMN_KEY_NAMES = "defaultColumns"
   
-##TODO this should be cookie based and default to this set  
 defaultColumns = ["FirstName","Active","LastUpdated"]  
+savedColumns = $.jStorage.get(COLUMN_KEY_NAMES, defaultColumns);
   
 columnTypes =
   int:
@@ -251,7 +246,12 @@ class App
   self = @
   constructor: ->
     @conditions = ko.observableArray(dataArr)
-    @columns = ko.observableArray(new Column n,t,defaultColumns.indexOf(n) for n,t of allColumns)
+    allColumns =
+      "FirstName": "varchar"
+      "EmployeeCount": "int"
+      "LastUpdated": "datetime" 
+      "Active": "bit"
+    @columns = ko.observableArray(new Column n,t,savedColumns.indexOf(n) for n,t of allColumns)
     @selectedCondition = new Condition(emptyCondition)
     @contacts = ko.observableArray()
     @contactsModel = @columns()

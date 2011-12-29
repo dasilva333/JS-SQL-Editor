@@ -97,8 +97,21 @@
 				else {	
 					$(element).jqGrid('navButtonAdd', value.pager, { 
 						caption: "Columns", 
-				 		title: "Reorder Columns", 
-				 		onClickButton : function (){ jQuery(element).jqGrid('columnChooser'); } 
+						title: "Reorder Columns", 
+						onClickButton : function (){ 
+							jQuery(element).jqGrid('columnChooser', {
+								done : function (perm) {   
+									if (perm) {
+										var defaultColumns = []
+										this.jqGrid("getGridParam","colModel").map(function(col){
+											if (!col.hidden)
+												defaultColumns.push(col.name);
+										})
+										$.jStorage.set(COLUMN_KEY_NAMES, defaultColumns);
+									}
+								}
+							}); 
+				 		} 
 					})
 				} 
 			} 

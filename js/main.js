@@ -1,17 +1,14 @@
 (function() {
-  var App, Column, Condition, allColumns, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions,
+  var App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions, savedColumns,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
 
-  allColumns = {
-    "FirstName": "varchar",
-    "EmployeeCount": "int",
-    "LastUpdated": "datetime",
-    "Active": "bit"
-  };
+  window.COLUMN_KEY_NAMES = "defaultColumns";
 
   defaultColumns = ["FirstName", "Active", "LastUpdated"];
+
+  savedColumns = $.jStorage.get(COLUMN_KEY_NAMES, defaultColumns);
 
   columnTypes = {
     int: {
@@ -385,14 +382,20 @@
       this.selectCondition = __bind(this.selectCondition, this);
       this.afterInsertRow = __bind(this.afterInsertRow, this);
       this.onCellSelect = __bind(this.onCellSelect, this);
-      var n, t;
+      var allColumns, n, t;
       this.conditions = ko.observableArray(dataArr);
+      allColumns = {
+        "FirstName": "varchar",
+        "EmployeeCount": "int",
+        "LastUpdated": "datetime",
+        "Active": "bit"
+      };
       this.columns = ko.observableArray((function() {
         var _results;
         _results = [];
         for (n in allColumns) {
           t = allColumns[n];
-          _results.push(new Column(n, t, defaultColumns.indexOf(n)));
+          _results.push(new Column(n, t, savedColumns.indexOf(n)));
         }
         return _results;
       })());
