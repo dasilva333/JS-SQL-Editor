@@ -1,6 +1,6 @@
 (function() {
-  var App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
 
@@ -266,7 +266,13 @@
     };
 
     Condition.prototype.comparisonTemplate = function(value, options) {
-      return '<select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select><input type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()">';
+      setTimeout(function() {
+        console.log(Main.selectedCondition.getDataType());
+        return $("input[name=Comparison]").datepicker({
+          disabled: Main.selectedCondition.getDataType() !== 'datetime'
+        });
+      }, 50);
+      return '<input class="datePicker" type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()"><select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select>';
     };
 
     Condition.prototype.showPresetComparisons = function() {
@@ -363,11 +369,12 @@
     self = App;
 
     function App() {
+      this.validateParens = __bind(this.validateParens, this);
+      this.validateStatement = __bind(this.validateStatement, this);
+      this.validateSeperator = __bind(this.validateSeperator, this);
       this.selectCondition = __bind(this.selectCondition, this);
-      this.gridComplete = __bind(this.gridComplete, this);
       this.afterInsertRow = __bind(this.afterInsertRow, this);
       this.onCellSelect = __bind(this.onCellSelect, this);
-      this.viewStatement = __bind(this.viewStatement, this);
       var n, t;
       this.conditions = ko.observableArray(dataArr);
       this.columns = ko.observableArray((function() {
@@ -394,20 +401,6 @@
       return ":;" + this.columns().join(";");
     };
 
-    App.prototype.viewStatement = function() {
-      var _this = this;
-      return ko.computed(function() {
-        var statement;
-        statement = "SELECT * FROM Contacts WHERE " + _this.conditions().join("");
-        try {
-          SQLParser.parse(statement).where.conditions;
-        } catch (error) {
-          statement = '<span class="ui-state-error">' + error + '</span>';
-        }
-        return statement;
-      });
-    };
-
     App.prototype.onCellSelect = function() {
       var _this = this;
       if (this.selectedCondition.ID !== "new_row") {
@@ -427,20 +420,41 @@
       }, 250);
     };
 
-    App.prototype.gridComplete = function() {
-      var _this = this;
-      setTimeout(function() {
-        return ko.applyBindings(_this, $("#navPager_right").parent().get(0));
-      }, 250);
-      return $("#navPager_right").html('<span data-bind="html: viewStatement()"></span>');
-    };
-
     App.prototype.selectCondition = function(selectedItem) {
       if (selectedItem.ID !== "new_row") {
         this.selectedCondition = selectedItem;
         ko.mapping.fromJS(selectedItem, this.selectedCondition);
       }
       return true;
+    };
+
+    App.prototype.validateSeperator = function() {
+      if (this.getConditions()()[this.getConditions()().length - 1] !== this.selectedCondition && this.selectedCondition.Seperator === "") {
+        return [false, "You must use a seperator for your criteria, AND/OR"];
+      } else {
+        return [true, ""];
+      }
+    };
+
+    App.prototype.validateStatement = function() {
+      try {
+        SQLParser.parse("SELECT * FROM Contacts WHERE " + this.conditions().join(""));
+        return [true, ""];
+      } catch (error) {
+        return [false, "Criteria is wrong: " + error.toString().split(":")[2]];
+      }
+    };
+
+    App.prototype.validateParens = function() {
+      var blank, end, start;
+      start = Main.selectedCondition.getStartParen()();
+      end = Main.selectedCondition.getEndParen()();
+      blank = "";
+      if ((start === blank && end !== blank) || (start !== blank && end === blank)) {
+        return [false, "Parenthesis aren't both set"];
+      } else {
+        return [true, ""];
+      }
     };
 
     return App;
@@ -462,7 +476,7 @@
     new Condition({
       "ID": 1,
       "(": "(",
-      "Column": "LastUpdated",
+      "Column": "FirstName",
       "Operator": "Equal To",
       "Comparison": "richard",
       ")": ")",
@@ -470,6 +484,15 @@
       "Statement": ""
     }), new Condition({
       "ID": 2,
+      "(": "(",
+      "Column": "LastUpdated",
+      "Operator": "Equal To",
+      "Comparison": "01/01/2012",
+      ")": ")",
+      "Seperator": "OR",
+      "Statement": ""
+    }), new Condition({
+      "ID": 3,
       "(": "(",
       "Column": "Active",
       "Operator": "Equal To",

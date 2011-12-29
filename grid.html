@@ -8,7 +8,7 @@
 	<link rel="stylesheet" type="text/css" media="screen" href="themes/ui.multiselect.css" />
 	<link rel="stylesheet" type="text/css" media="screen" href="themes/grid_styles.css" />
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.js" type="text/javascript" charset="ISO-8859-1"></script>
-	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js" type="text/javascript" charset="ISO-8859-1"></script>
+	<script src="js/jquery-ui.js" type="text/javascript" charset="ISO-8859-1"></script>
 	<script src="js/knockout-1.2.1.js" type="text/javascript"></script>
 	<script src="js/knockout.mapping.js" type="text/javascript"></script>
 	<script src="js/jquery.layout.js" type="text/javascript"></script>
@@ -36,7 +36,6 @@
 			selectItem: selectCondition,
 			selectedItem: selectedCondition,
 			onCellSelect: onCellSelect,
-			gridComplete: gridComplete,
 			afterInsertRow: afterInsertRow,
 			caption: 'Criteria Builder',
 			pager: '#gridpager',
@@ -46,7 +45,11 @@
 						editoptions:{
 							value:':;(:(;((:((;(((:(((', 
 							dataEvents: [ { type: 'click', fn: function(e) { selectedCondition.setStartParen(e.target.value); } } ] 
-						} 
+						}, 
+						editrules: {
+							custom: true,
+							custom_func: validateParens
+						}
 				},
 				{ 
 					name: 'Column', index: 'Column', width: 200, editable: true, edittype: 'select', 
@@ -55,38 +58,58 @@
 						dataEvents: [
 							{ type: 'click', fn: function(e) { selectedCondition.setColumnName(e.target.value); } }
 						] 
-					} 
+					},
+					editrules: {
+						required: true
+					}
 				},
 				{ 
 					name: 'Operator', index: 'Operator', width: 150, editable: true, edittype: 'custom', 
 					editoptions: { 
-						custom_element: Main.selectedCondition.operatorTemplate, 
-						custom_value: Main.selectedCondition.getOperator
+						custom_element: selectedCondition.operatorTemplate, 
+						custom_value: selectedCondition.getOperator
+					},
+					editrules: {
+						required: true
 					}  
 				},
-				{ name: 'Comparison', index: 'Comparison', width: 200, editable: true, edittype: 'custom', 
+				{ name: 'Comparison', index: 'Comparison', width: 200, editable: true, edittype: 'custom', datefmt: 'mm/dd/yyyy',
 					editoptions: { 
-						custom_element: Main.selectedCondition.comparisonTemplate, 
-						custom_value: Main.selectedCondition.getComparison
-					}   
-				
+						custom_element: selectedCondition.comparisonTemplate, 
+						custom_value: selectedCondition.getComparison
+					},
+					editrules: {
+						required: true
+					}
 				},
 				{ name: ')', index: ')', width: 30, editable: true, edittype:'select',
 						editoptions:{
 							value:':;):);)):));))):)))', 
 							dataEvents: [ { type: 'click', fn: function(e) { selectedCondition.setEndParen(e.target.value); } } ] 
-						} 
+						}, 
+						editrules: {
+							custom: true,
+							custom_func: validateParens
+						}
 				},
 				{ name: 'Seperator', index: 'Seperator', width: 60, editable: true, edittype:'select',
 						editoptions:{
 							value:':;OR:OR;AND:AND', 
 							dataEvents: [ { type: 'click', fn: function(e) { selectedCondition.setSeperator(e.target.value); } } ] 
-						} 
+						}, 
+						editrules: {
+							custom: true,
+							custom_func: validateSeperator
+						}
 				},
 				{ name: 'Statement', index: 'Statement', width: 400, editable: true, edittype: 'custom', 
 					editoptions: { 
 						custom_element: selectedCondition.statementTemplate, 
 						custom_value: selectedCondition.getStatement
+					}, 
+					editrules: {
+						custom: true,
+						custom_func: validateStatement
 					}   
 				}
 			],

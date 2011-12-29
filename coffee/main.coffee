@@ -177,8 +177,14 @@ class Condition
     @presetComparison
   
   comparisonTemplate: (value, options) ->
-    '<select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select><input type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()">'
-    
+    setTimeout(->
+      console.log Main.selectedCondition.getDataType()
+      $("input[name=Comparison]").datepicker
+          disabled: Main.selectedCondition.getDataType() isnt 'datetime'
+    ,50)
+    '<input class="datePicker" type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()"><select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select>'
+
+   
   showPresetComparisons: ->
     @getComparisons().length > 0
   
@@ -190,9 +196,6 @@ class Condition
     @endParen
    
   getSeperator: ->
-    ##TODO figure out a way to read the array its in and make these type of logic decisions
-    ##if (Main.getConditions()()[Main.getConditions()().length - 1] isnt @ and @seperator() is "")
-    ##  @seperator "AND"`
     @Seperator = @seperator()
     @seperator()
     
@@ -218,7 +221,7 @@ class Condition
     else
       @Statement = @toString()
       @toString()    
-        
+  
   toString: =>
     @Statement = " #{ @startParen() } #{ @columnName() } #{ @getOpAndComp() } #{ @endParen() } #{ @getSeperator() } "
     @Statement
@@ -256,15 +259,17 @@ class App
   
   getGridColumns: ->
     ":;" + @columns().join(";")
-      
-  viewStatement: =>
-    ko.computed =>
-      statement = "SELECT * FROM Contacts WHERE " + @conditions().join("")
-      try
-        SQLParser.parse(statement).where.conditions
-      catch error
-        statement = '<span class="ui-state-error">' + error + '</span>'
-      statement  
+  
+  ######    
+  ## viewStatement: =>
+  ##  ko.computed =>
+  ##    response = '<img src="/images/fileTypes/check.png">'
+  ##    try
+  ##      SQLParser.parse("SELECT * FROM Contacts WHERE " + @conditions().join("")).where.conditions
+  ##    catch error
+  ##      response = '<span class="ui-state-error">' + error.toString().split(":")[2] + '</span>'
+  ##    response  
+  ######
   
   onCellSelect: => 
     if (@selectedCondition.ID isnt "new_row")
@@ -280,18 +285,41 @@ class App
         ko.applyBindings @, $("#" + @selectedCondition.ID).parent().get 0
     ,250) 
 
-  gridComplete: =>
-    setTimeout( =>
-      ko.applyBindings @, $("#navPager_right").parent().get 0
-    ,250)    
-    $("#navPager_right").html '<span data-bind="html: viewStatement()"></span>'
+  ## Bring Back if nessecary
+  ##gridComplete: =>
+  ##  setTimeout( =>
+  ##    ko.applyBindings @, $("#navPager_right").parent().get 0
+  ##  ,250)    
+  ##  $("#navPager_right").html '<span data-bind="html: viewStatement()"></span>'
   
   selectCondition: (selectedItem) =>
     if (selectedItem.ID isnt "new_row")
       @selectedCondition = selectedItem 
       ko.mapping.fromJS(selectedItem, @selectedCondition)
     true
-  
+    
+  validateSeperator: =>
+    if (@getConditions()()[@getConditions()().length - 1] isnt @selectedCondition and @selectedCondition.Seperator is "")
+      [false, "You must use a seperator for your criteria, AND/OR"]
+    else
+      [true, ""]  
+    
+  validateStatement: =>
+    try
+      SQLParser.parse("SELECT * FROM Contacts WHERE " + @conditions().join(""))
+      [true, ""]
+    catch error
+      [false, "Criteria is wrong: " + error.toString().split(":")[2]]
+ 
+  validateParens: =>
+    start = Main.selectedCondition.getStartParen()()
+    end = Main.selectedCondition.getEndParen()()
+    blank = ""
+    if ((start is blank and end isnt blank) or (start isnt blank and end is blank))
+      [false, "Parenthesis aren't both set"]
+    else
+      [true, ""]     
+        
 emptyCondition = {
   "ID": "new_row",
   "(": "",
@@ -307,7 +335,7 @@ dataArr = [
   new Condition({
     "ID": 1,
     "(": "(",
-    "Column": "LastUpdated",
+    "Column": "FirstName",
     "Operator": "Equal To",
     "Comparison": "richard",
     ")": ")",
@@ -315,7 +343,17 @@ dataArr = [
     "Statement": "",
   }),
   new Condition({
-    "ID": 2,
+    "ID": 2
+    "(": "(",
+    "Column": "LastUpdated",
+    "Operator": "Equal To",
+    "Comparison": "01/01/2012",
+    ")": ")",
+    "Seperator": "OR",
+    "Statement": "",
+  }),
+  new Condition({
+    "ID": 3,
     "(": "(",
     "Column": "Active",
     "Operator": "Equal To",
