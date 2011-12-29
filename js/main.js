@@ -1,6 +1,6 @@
 (function() {
-  var App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
 
@@ -127,6 +127,7 @@
     function Condition(params) {
       this.toString = __bind(this.toString, this);
       this.getOpAndComp = __bind(this.getOpAndComp, this);
+      this.getComparison = __bind(this.getComparison, this);
       this.operatorTemplate = __bind(this.operatorTemplate, this);
       this.setOperatorByEvent = __bind(this.setOperatorByEvent, this);      this.ID = params['ID'] || 0;
       this.startParen = ko.observable(params['('] || "");
@@ -219,6 +220,13 @@
     Condition.prototype.getComparison = function(elem, op, value) {
       var operation;
       operation = op || "";
+      $("#conditionsGrid").jqGrid("getGridParam", "colModel").filter(function(o) {
+        return o.name === "Comparison";
+      })[0].editrules = {
+        required: true,
+        number: this.getDataType() === "int",
+        date: this.getDataType() === "datetime"
+      };
       if (operation === 'get') {
         return $(elem).filter("input").val();
       } else {
@@ -267,12 +275,17 @@
 
     Condition.prototype.comparisonTemplate = function(value, options) {
       setTimeout(function() {
-        console.log(Main.selectedCondition.getDataType());
         return $("input[name=Comparison]").datepicker({
-          disabled: Main.selectedCondition.getDataType() !== 'datetime'
+          showAnim: function() {
+            if (Main.selectedCondition.getDataType() !== 'datetime') {
+              return 'hide';
+            } else {
+              return 'show';
+            }
+          }
         });
       }, 50);
-      return '<input class="datePicker" type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()"><select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select>';
+      return '<input class="datePicker" size="11" type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()"><select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select>';
     };
 
     Condition.prototype.showPresetComparisons = function() {

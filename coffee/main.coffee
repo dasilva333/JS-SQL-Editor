@@ -140,8 +140,15 @@ class Condition
   operatorTemplate: (value, options) =>
     '<select data-bind="options: selectedCondition.getOperators(), value: selectedCondition.operator, optionsCaption: defaultCaption"></select>'
     
-  getComparison: (elem, op, value) ->
+  getComparison: (elem, op, value) =>
     operation = op || "";
+    $("#conditionsGrid").jqGrid("getGridParam","colModel").filter((o) -> 
+      o.name is "Comparison"
+    )[0].editrules = {
+      required: true
+      number: (@getDataType() is "int")
+      date: (@getDataType() is "datetime")
+    }
     if(operation is 'get')
       $(elem).filter("input").val();
     else
@@ -178,11 +185,15 @@ class Condition
   
   comparisonTemplate: (value, options) ->
     setTimeout(->
-      console.log Main.selectedCondition.getDataType()
       $("input[name=Comparison]").datepicker
-          disabled: Main.selectedCondition.getDataType() isnt 'datetime'
-    ,50)
-    '<input class="datePicker" type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()"><select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select>'
+          showAnim: ->
+            ##Todo Figure out why I cant reference this or @ from inside here
+            if (Main.selectedCondition.getDataType() isnt 'datetime')
+              'hide'
+            else  
+              'show'
+    ,50) 
+    '<input class="datePicker" size="11" type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()"><select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select>'
 
    
   showPresetComparisons: ->

@@ -7962,6 +7962,8 @@ $.extend(Datepicker.prototype, {
 			left: offset.left + 'px', top: offset.top + 'px'});
 		if (!inst.inline) {
 			var showAnim = $.datepicker._get(inst, 'showAnim');
+			//Modified to support a function callback
+			showAnim = ($.isFunction(showAnim) ? showAnim.call() : showAnim);
 			var duration = $.datepicker._get(inst, 'duration');
 			var postProcess = function() {
 				var cover = inst.dpDiv.find('iframe.ui-datepicker-cover'); // IE6- only
