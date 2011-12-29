@@ -1,6 +1,6 @@
 (function() {
-  var App, Column, Condition, allColumns, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var App, Column, Condition, allColumns, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
 
@@ -352,11 +352,13 @@
 
   Column = (function() {
 
-    function Column(name, type) {
+    function Column(name, type, index) {
       this.viewName = ko.observable(name);
       this.dataType = ko.observable(type);
       this.index = name;
       this.name = name;
+      this.hidden = index === -1;
+      this.index = index;
     }
 
     Column.prototype.getViewName = function() {
@@ -390,15 +392,13 @@
         _results = [];
         for (n in allColumns) {
           t = allColumns[n];
-          _results.push(new Column(n, t));
+          _results.push(new Column(n, t, defaultColumns.indexOf(n)));
         }
         return _results;
       })());
       this.selectedCondition = new Condition(emptyCondition);
       this.contacts = ko.observableArray();
-      this.contactsModel = defaultColumns.map(function(name) {
-        return new Column(name, allColumns[name]);
-      });
+      this.contactsModel = this.columns();
       this.previewRecords();
     }
 
@@ -457,7 +457,7 @@
               FirstName: "Richard" + i,
               LastUpdated: "02/" + i + "/2010",
               Active: Math.random() > 0.5 ? true : false,
-              EmployeeCount: i * Math.random()
+              EmployeeCount: Math.round(i * Math.random(), 2)
             }));
           }
           return _results;

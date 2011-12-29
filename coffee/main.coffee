@@ -135,10 +135,7 @@ class Condition
       @operator  
   
   getOperators: ->
-    if (@getDataType() of columnTypes)
-      operator for operator of columnTypes[ @getDataType() ]
-    else
-      [""]  
+    if (@getDataType() of columnTypes) then operator for operator of columnTypes[ @getDataType() ] else [""]  
 
   operatorTemplate: (value, options) =>
     '<select data-bind="options: selectedCondition.getOperators(), value: selectedCondition.operator, optionsCaption: defaultCaption"></select>'
@@ -191,10 +188,7 @@ class Condition
       $("input[name=Comparison]").datepicker
           showAnim: ->
             ##Todo Figure out why I cant reference this or @ from inside here
-            if (Main.selectedCondition.getDataType() isnt 'datetime')
-              'hide'
-            else  
-              'show'
+            if (Main.selectedCondition.getDataType() isnt 'datetime') then 'hide' else 'show'
     ,50) 
     '<input class="datePicker" size="11" type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()"><select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select>'
 
@@ -214,17 +208,11 @@ class Condition
     @seperator()
     
   getDataType: ->
-    if (@columnName() of allColumns)
-      allColumns[ @columnName() ]
-    else  
-      ""
+    if (@columnName() of allColumns) then allColumns[ @columnName() ] else ""
       
   getOpAndComp: =>
-    if (@operator() is "" or typeof @operator() is "undefined")
-      ""
-    else  
-      operatorDefinitions[@getOperator()()].apply(@)
-      
+    if (@operator() is "" or typeof @operator() is "undefined") then "" else operatorDefinitions[@getOperator()()].apply(@)
+
   statementTemplate: ->
     '<span data-bind="text: selectedCondition.toString()"></span><input type="hidden" data-bind="value: selectedCondition.toString()">'  
   
@@ -244,11 +232,13 @@ Condition = Condition;
 
 class Column
 
-  constructor: (name,type) ->
+  constructor: (name,type,index) ->
     @viewName = ko.observable name
     @dataType = ko.observable type
     @index = name
     @name = name
+    @hidden = index is -1
+    @index = index
   
   getViewName: ->
     @viewName
@@ -261,12 +251,10 @@ class App
   self = @
   constructor: ->
     @conditions = ko.observableArray(dataArr)
-    @columns = ko.observableArray(new Column n,t for n,t of allColumns)
+    @columns = ko.observableArray(new Column n,t,defaultColumns.indexOf(n) for n,t of allColumns)
     @selectedCondition = new Condition(emptyCondition)
     @contacts = ko.observableArray()
-    @contactsModel = defaultColumns.map( (name) ->
-      new Column(name, allColumns[name])
-    )
+    @contactsModel = @columns()
     @previewRecords()
       
   getConditions: ->
@@ -311,7 +299,7 @@ class App
               FirstName: "Richard" + i
               LastUpdated : "02/" + i + "/2010"
               Active: if Math.random() > 0.5 then true else false
-              EmployeeCount: i * Math.random() 
+              EmployeeCount: Math.round(i * Math.random(),2) 
           )
     )
     

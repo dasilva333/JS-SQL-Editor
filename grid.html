@@ -38,7 +38,8 @@
 			onCellSelect: onCellSelect,
 			afterInsertRow: afterInsertRow,
 			caption: 'Criteria Builder',
-			pager: '#navPager',
+			editor: true,
+			pager: '#conditionPager',
 			colModel: [
 				{ name: 'ID', index: 'ID', width: 15, sortable: true },
 				{ name: '(', index: '(', width: 30, editable: true, edittype:'select',
@@ -116,7 +117,7 @@
 			rowId: 'ID'
         }">
     	</table>
-		<div id="navPager"></div>
+		<div id="conditionPager"></div>
 		
 		<br />
 		<br />
@@ -125,9 +126,12 @@
 			data: contacts,
 			caption: 'Contacts Result',
 			rowId: 'ID',
-			colModel: contactsModel
+			colModel: contactsModel,
+			editor: false,
+			pager: '#contactsPager'
         }">
     	</table> 
+    	<div id="contactsPager"></div>
   	</div>
 </body>
 </html>

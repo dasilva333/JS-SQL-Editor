@@ -18,23 +18,25 @@
 				cmTemplate: { align: "center" },
 				pager: value.pager,
 				onSelectRow: function (id) {
-					var item = $(element).jqGrid('getLocalRow', id);
-					value.selectItem(item);
-					if (id && id !== lastsel) {
-						jQuery(element).jqGrid('restoreRow', lastsel);
-						jQuery(element).jqGrid('editRow', id, {
-							keys: true,
-							aftersavefunc: function(){
-								var oldItem = ko.utils.arrayFirst(dataArr, function (obj) { return obj.ID == id;  });
-								var newItem = $(element).jqGrid('getLocalRow', id);
-								if (oldItem !== null) {
-									value.data.replace(oldItem, newItem);
+					if (value.editor == true){
+						var item = $(element).jqGrid('getLocalRow', id);
+						value.selectItem(item);
+						if (id && id !== lastsel) {
+							jQuery(element).jqGrid('restoreRow', lastsel);
+							jQuery(element).jqGrid('editRow', id, {
+								keys: true,
+								aftersavefunc: function(){
+									var oldItem = ko.utils.arrayFirst(dataArr, function (obj) { return obj.ID == id;  });
+									var newItem = $(element).jqGrid('getLocalRow', id);
+									if (oldItem !== null) {
+										value.data.replace(oldItem, newItem);
+									}
+									lastsel = null;
+									return true
 								}
-								lastsel = null;
-								return true
-							}
-						});
-						lastsel = id;
+							});
+							lastsel = id;
+						}	
 					}
 					return true;
 				}, 
@@ -45,9 +47,9 @@
 				caption: value.caption,
 				//disable paging
 				rowList: [],        // disable page size dropdown
-			    pgbuttons: false,     // disable page control like next, back button
+			    pgbuttons: !value.editor,     // disable page control like next, back button
 			    pgtext: null,         // disable pager text like 'Page 0 of 10'
-			    viewrecords: false    // disable current view record text like 'View 1-10 of 100' 
+			    viewrecords: !value.editor    // disable current view record text like 'View 1-10 of 100' 
 			})
 			.jqGrid("setGridParam", {
 				data: ko.utils.unwrapObservable(value.data).slice(0)
@@ -60,42 +62,45 @@
 					{reloadAfterSubmit:false}, // del options
 					{} // search options
 				)
-				.jqGrid('inlineNav', value.pager, { 
-				   edit: true,
-				   editicon: "ui-icon-pencil",
-				   add: true,
-				   addicon:"ui-icon-plus",
-				   save: true,
-				   saveicon:"ui-icon-disk",
-				   cancel: true,
-				   cancelicon:"ui-icon-cancel",
-				   addParams : {useFormatter : false},
-				   editParams : {
-					   aftersavefunc: function(){
-						   //var newItem = value.selectedItem; //this one should def work
-						   //var newItem = $(element).jqGrid('getLocalRow', "new_row"); //this one only gets the basic values
-						   var newItem = Main.selectedCondition; //fix this so it doesn't reference Main directly
-						   newItem.ID = dataArr.length + 1; 
-						   value.data.unshift(newItem);
-						   lastsel = null;
+				if (value.editor == true){
+					$(element).jqGrid('inlineNav', value.pager, { 
+					   edit: true,
+					   editicon: "ui-icon-pencil",
+					   add: true,
+					   addicon:"ui-icon-plus",
+					   save: true,
+					   saveicon:"ui-icon-disk",
+					   cancel: true,
+					   cancelicon:"ui-icon-cancel",
+					   addParams : {useFormatter : false},
+					   editParams : {
+						   aftersavefunc: function(){
+							   //var newItem = value.selectedItem; //this one should def work
+							   //var newItem = $(element).jqGrid('getLocalRow', "new_row"); //this one only gets the basic values
+							   var newItem = Main.selectedCondition; //fix this so it doesn't reference Main directly
+							   newItem.ID = dataArr.length + 1; 
+							   value.data.unshift(newItem);
+							   lastsel = null;
+						   }
 					   }
-				   }
-				})
-				.jqGrid('navButtonAdd', value.pager, 
-				 	{ 
+					})
+					.jqGrid('navButtonAdd',value.pager, {
+					   caption:"Preview", 
+					   buttonicon:"ui-icon-search", 
+					   onClickButton: function(){ 
+						   Main.previewRecords()
+					   }, 
+					   position:"last"
+					})
+				}
+					
+				else {	
+					$(element).jqGrid('navButtonAdd', value.pager, { 
 						caption: "Columns", 
 				 		title: "Reorder Columns", 
 				 		onClickButton : function (){ jQuery(element).jqGrid('columnChooser'); } 
 					})
-				
-				.jqGrid('navButtonAdd',value.pager, {
-				   caption:"Preview", 
-				   buttonicon:"ui-icon-search", 
-				   onClickButton: function(){ 
-					   Main.previewRecords()
-				   }, 
-				   position:"last"
-				})
+				} 
 			} 
 		},
 		update: function (element, valueAccessor) {
