@@ -1,15 +1,17 @@
 (function() {
-  var App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions;
+  var App, Column, Condition, allColumns, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
 
-  defaultColumns = {
+  allColumns = {
     "FirstName": "varchar",
     "EmployeeCount": "int",
     "LastUpdated": "datetime",
     "Active": "bit"
   };
+
+  defaultColumns = ["FirstName", "Active", "LastUpdated"];
 
   columnTypes = {
     int: {
@@ -307,8 +309,8 @@
     };
 
     Condition.prototype.getDataType = function() {
-      if (this.columnName() in defaultColumns) {
-        return defaultColumns[this.columnName()];
+      if (this.columnName() in allColumns) {
+        return allColumns[this.columnName()];
       } else {
         return "";
       }
@@ -351,8 +353,10 @@
   Column = (function() {
 
     function Column(name, type) {
-      this.getTypes = __bind(this.getTypes, this);      this.viewName = ko.observable(name);
+      this.viewName = ko.observable(name);
       this.dataType = ko.observable(type);
+      this.index = name;
+      this.name = name;
     }
 
     Column.prototype.getViewName = function() {
@@ -361,15 +365,6 @@
 
     Column.prototype.toString = function() {
       return this.viewName() + ":" + this.viewName();
-    };
-
-    Column.prototype.getTypes = function() {
-      var operator, _results;
-      _results = [];
-      for (operator in columnTypes[this.dataType()]) {
-        _results.push(operator);
-      }
-      return _results;
     };
 
     return Column;
@@ -393,13 +388,23 @@
       this.columns = ko.observableArray((function() {
         var _results;
         _results = [];
-        for (n in defaultColumns) {
-          t = defaultColumns[n];
+        for (n in allColumns) {
+          t = allColumns[n];
           _results.push(new Column(n, t));
         }
         return _results;
       })());
       this.selectedCondition = new Condition(emptyCondition);
+      this.contacts = ko.observableArray();
+      this.contactsModel = defaultColumns.map(function(name) {
+        return new Column(name, allColumns[name]);
+      });
+      this.contacts.push({
+        FirstName: "Richard",
+        LastUpdated: "02/05/2010",
+        Active: true,
+        EmployeeCount: 2
+      });
     }
 
     App.prototype.getConditions = function() {

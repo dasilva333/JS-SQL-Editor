@@ -121,10 +121,11 @@
 		<br />
 		<br />
 		
-   		<table id="conditionsGrid" data-bind="grid: { 
+   		<table id="contactsGrid" data-bind="grid: { 
 			data: contacts,
 			caption: 'Contacts Result',
-			rowId: 'ID'
+			rowId: 'ID',
+			colModel: contactsModel
         }">
     	</table> 
   	</div>

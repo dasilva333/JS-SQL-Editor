@@ -1,10 +1,13 @@
 window.defaultCaption = "--Select--"
 
-defaultColumns =
+allColumns =
   "FirstName": "varchar"
   "EmployeeCount": "int"
   "LastUpdated": "datetime" 
   "Active": "bit"
+  
+##TODO this should be cookie based and default to this set  
+defaultColumns = ["FirstName","Active","LastUpdated"]  
   
 columnTypes =
   int:
@@ -211,8 +214,8 @@ class Condition
     @seperator()
     
   getDataType: ->
-    if (@columnName() of defaultColumns)
-      defaultColumns[ @columnName() ]
+    if (@columnName() of allColumns)
+      allColumns[ @columnName() ]
     else  
       ""
       
@@ -244,24 +247,32 @@ class Column
   constructor: (name,type) ->
     @viewName = ko.observable name
     @dataType = ko.observable type
+    @index = name
+    @name = name
   
   getViewName: ->
     @viewName
   
   toString: ->
-    @viewName() + ":" + @viewName()
-
-  getTypes: =>
-    operator for operator of columnTypes[ @dataType() ]
+    @viewName() + ":" + @viewName() 
     
 class App
   
   self = @
   constructor: ->
     @conditions = ko.observableArray(dataArr)
-    @columns = ko.observableArray(new Column n,t for n,t of defaultColumns)
+    @columns = ko.observableArray(new Column n,t for n,t of allColumns)
     @selectedCondition = new Condition(emptyCondition)
-
+    @contacts = ko.observableArray()
+    @contactsModel = defaultColumns.map( (name) ->
+      new Column(name, allColumns[name])
+    )
+    @contacts.push({
+        FirstName: "Richard",
+        LastUpdated : "02/05/2010",
+        Active: true,
+        EmployeeCount: 2
+    })
   getConditions: ->
     @conditions
   
@@ -270,17 +281,6 @@ class App
   
   getGridColumns: ->
     ":;" + @columns().join(";")
-  
-  ######    
-  ## viewStatement: =>
-  ##  ko.computed =>
-  ##    response = '<img src="/images/fileTypes/check.png">'
-  ##    try
-  ##      SQLParser.parse("SELECT * FROM Contacts WHERE " + @conditions().join("")).where.conditions
-  ##    catch error
-  ##      response = '<span class="ui-state-error">' + error.toString().split(":")[2] + '</span>'
-  ##    response  
-  ######
   
   onCellSelect: => 
     if (@selectedCondition.ID isnt "new_row")
@@ -294,14 +294,7 @@ class App
     setTimeout( =>
         @selectedCondition = new Condition emptyCondition
         ko.applyBindings @, $("#" + @selectedCondition.ID).parent().get 0
-    ,250) 
-
-  ## Bring Back if nessecary
-  ##gridComplete: =>
-  ##  setTimeout( =>
-  ##    ko.applyBindings @, $("#navPager_right").parent().get 0
-  ##  ,250)    
-  ##  $("#navPager_right").html '<span data-bind="html: viewStatement()"></span>'
+    ,250)
   
   selectCondition: (selectedItem) =>
     if (selectedItem.ID isnt "new_row")

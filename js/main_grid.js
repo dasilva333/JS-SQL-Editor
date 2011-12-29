@@ -52,42 +52,44 @@
 			.jqGrid("setGridParam", {
 				data: ko.utils.unwrapObservable(value.data).slice(0)
 			})
-			.jqGrid('navGrid',value.pager,
-				{edit:false,add:false,del:false,search:false,nav:false,refresh:false}, //options
-				{reloadAfterSubmit:false}, // edit options
-				{reloadAfterSubmit:false}, // add options
-				{reloadAfterSubmit:false}, // del options
-				{} // search options
-			)
-			.jqGrid('inlineNav', value.pager, { 
-			   edit: true,
-			   editicon: "ui-icon-pencil",
-			   add: true,
-			   addicon:"ui-icon-plus",
-			   save: true,
-			   saveicon:"ui-icon-disk",
-			   cancel: true,
-			   cancelicon:"ui-icon-cancel",
-			   addParams : {useFormatter : false},
-			   editParams : {
-				   aftersavefunc: function(){
-					   //var newItem = value.selectedItem; //this one should def work
-					   //var newItem = $(element).jqGrid('getLocalRow', "new_row"); //this one only gets the basic values
-					   var newItem = Main.selectedCondition; //fix this so it doesn't reference Main directly
-					   newItem.ID = dataArr.length + 1; 
-					   value.data.unshift(newItem);
-					   lastsel = null;
+			if (value.pager){
+				$(element).jqGrid('navGrid',value.pager,
+					{edit:false,add:false,del:false,search:false,nav:false,refresh:false}, //options
+					{reloadAfterSubmit:false}, // edit options
+					{reloadAfterSubmit:false}, // add options
+					{reloadAfterSubmit:false}, // del options
+					{} // search options
+				)
+				.jqGrid('inlineNav', value.pager, { 
+				   edit: true,
+				   editicon: "ui-icon-pencil",
+				   add: true,
+				   addicon:"ui-icon-plus",
+				   save: true,
+				   saveicon:"ui-icon-disk",
+				   cancel: true,
+				   cancelicon:"ui-icon-cancel",
+				   addParams : {useFormatter : false},
+				   editParams : {
+					   aftersavefunc: function(){
+						   //var newItem = value.selectedItem; //this one should def work
+						   //var newItem = $(element).jqGrid('getLocalRow', "new_row"); //this one only gets the basic values
+						   var newItem = Main.selectedCondition; //fix this so it doesn't reference Main directly
+						   newItem.ID = dataArr.length + 1; 
+						   value.data.unshift(newItem);
+						   lastsel = null;
+					   }
 				   }
-			   }
-			})
-			.jqGrid('navButtonAdd',value.pager, {
-			   caption:"Preview", 
-			   buttonicon:"ui-icon-search", 
-			   onClickButton: function(){ 
-			     alert("Adding Row");
-			   }, 
-			   position:"last"
-			})
+				})
+				.jqGrid('navButtonAdd',value.pager, {
+				   caption:"Preview", 
+				   buttonicon:"ui-icon-search", 
+				   onClickButton: function(){ 
+				     alert("Adding Row");
+				   }, 
+				   position:"last"
+				})				
+			} 
 		},
 		update: function (element, valueAccessor) {
 			var value = valueAccessor();
