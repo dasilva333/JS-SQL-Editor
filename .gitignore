@@ -1,1 +1,14 @@
+# mac
+.DS_Store
+*.orig
+*.tmp_*
+
+# windows 
+*.bak
+*.cfm
+dwsync.xml
+
+# everywhere
+*.swp
+.sass-cache/*
 *.cmd
