@@ -1,8 +1,8 @@
 window.defaultCaption = "--Select--"  
 window.COLUMN_KEY_NAMES = "defaultColumns"
 window.allColumns = []
-
-ACT_DATA_URL = private_URL || "/act/ACT_Schema.cfm"  
+ACT_DATA_URL = if (typeof private_URL != "undefined") then private_URL else "/act/ACT_Schema.cfm"  
+    
 defaultColumns = ["93","3","5"] ##ACT_ID, FirstName, LastName  
 savedColumns = $.jStorage.get(COLUMN_KEY_NAMES, defaultColumns);
 
@@ -61,18 +61,18 @@ columnTypes =
     "Equal To": ["True", "False"]
 
 operatorDefinitions = 
-    "After Next [Days]": -> " DateAdd(d," + @getComparison()() + "," + @getColumnName()() + " ) > GetDate"
     "Contains Data": -> " != '' OR " + @getColumnName()() + " IS NOT NULL  "
     "Days Equal": -> " DAY( " + @getColumnName()() + " ) = "
     "Does Not Contain Data": -> " = ''  OR " + @getColumnName()() + " IS NULL "
     "Equal To": -> " = " + @getFormattedComparison()
-    "Months Equals [number]": -> " MONTH( " + @getColumnName()() + " ) = "
-    "Not Equal To": -> " != " + @getFormattedComparison() 
-    "Older than [days]": -> ""
-    "On or After": -> ""
-    "On or Before": -> ""
-    "Within Last [days]": -> ""
-    "Within Next [days]": -> ""
+    "Not Equal To": -> " != " + @getFormattedComparison()
+    "*After Next [Days]": -> " DateAdd(d," + @getComparison()() + "," + @getColumnName()() + " ) > GetDate"
+    "*Months Equals [number]": -> " MONTH( " + @getColumnName()() + " ) = "
+    "*Older than [days]": -> ""
+    "*On or After": -> ""
+    "*On or Before": -> ""
+    "*Within Last [days]": -> ""
+    "*Within Next [days]": -> ""
     "Years Equals [number]": -> " YEAR( " + @getColumnName()() + " ) = YEAR( " + @getComparison()() + " )"
     "Starts With": -> " LIKE '" + @getComparison()() + "%' "
     "Contains": -> " LIKE '%" + @getComparison()() + "%' "
@@ -102,7 +102,7 @@ class Condition
     this[')'] = params[')'] || ""
     @seperator = ko.observable params['Seperator'] || ""
     @Seperator = params['Seperator'] || ""
-    @Statement = @toString()
+    @Statement = @getStatement()
      
   setStartParen: (parens) ->
     @startParen parens
@@ -236,29 +236,26 @@ class Condition
     if (@operator() is "" or typeof @operator() is "undefined") then "" else operatorDefinitions[@getOperator()()].apply(@)
 
   statementTemplate: ->
-    '<span data-bind="text: selectedCondition.toString()"></span><input type="hidden" data-bind="value: selectedCondition.toString()">'  
+    '<span data-bind="text: selectedCondition.getStatement()"></span><input type="hidden" data-bind="value: selectedCondition.toString()">'  
   
   getStatement: (elem, op, value) ->
     operation = op || "";
     if(operation is 'get')
       $(elem).filter("input").val();
     else
-      @Statement = @toString()
-      @toString()    
+      @Statement = " #{ @startParen() } #{ @columnName() } #{ @getOpAndComp() } #{ @endParen() } #{ @getSeperator() } "
   
   toString: =>
-    @Statement = " #{ @startParen() } #{ @columnName() } #{ @getOpAndComp() } #{ @endParen() } #{ @getSeperator() } "
-    @Statement
-  
-  toObject: =>
-    ID: @ID
-    '(': @['(']
-    Column: @Column 
-    Operator: @Operator
-    Comparison: @Comparison
-    ')': @[')']
-    Seperator: @Seperator
-    
+    JSON.stringify
+      ID: @ID
+      '(': @['(']
+      Column: @Column 
+      Operator: @Operator
+      Comparison: @Comparison
+      ')': @[')']
+      Seperator: @Seperator
+      type: @getDataType()
+        
 Condition = Condition;
 
 class Column
@@ -325,7 +322,7 @@ class App
       url: ACT_DATA_URL
       data:
         action: "GetContactsByQuery"
-        where: @conditions().join("")
+        where: "[" + @conditions().join(",") + "]"
       type: 'GET'
       dataType: 'jsonp'
       jsonp: 'callback',
@@ -342,11 +339,14 @@ class App
       [true, ""]  
     
   validateStatement: =>
-    try
-      SQLParser.parse("SELECT * FROM Contacts WHERE " + @conditions().join(""))
-      [true, ""]
-    catch error
-      [false, "Criteria is wrong: " + error.toString().split(":")[2]]
+    [true, ""]
+    ##TODO fix this thing 
+    ##try
+    ##  statement = "SELECT * FROM Contacts WHERE " + ( @conditions().map( (o) -> o.getStatement() ).join("")
+    ##  console.log statement
+    ##  SQLParser.parse statement
+    ##catch error
+    ##  [false, "Criteria is wrong: " + error.toString().split(":")[2]]
  
   validateParens: =>
     start = Main.selectedCondition.getStartParen()()

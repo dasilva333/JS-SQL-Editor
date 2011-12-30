@@ -1,6 +1,6 @@
 (function() {
-  var ACT_DATA_URL, App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions, savedColumns;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var ACT_DATA_URL, App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions, savedColumns,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
 
@@ -8,7 +8,7 @@
 
   window.allColumns = [];
 
-  ACT_DATA_URL = private_URL || "/act/ACT_Schema.cfm";
+  ACT_DATA_URL = typeof private_URL !== "undefined" ? private_URL : "/act/ACT_Schema.cfm";
 
   defaultColumns = ["93", "3", "5"];
 
@@ -89,9 +89,6 @@
   };
 
   operatorDefinitions = {
-    "After Next [Days]": function() {
-      return " DateAdd(d," + this.getComparison()() + "," + this.getColumnName()() + " ) > GetDate";
-    },
     "Contains Data": function() {
       return " != '' OR " + this.getColumnName()() + " IS NOT NULL  ";
     },
@@ -104,25 +101,28 @@
     "Equal To": function() {
       return " = " + this.getFormattedComparison();
     },
-    "Months Equals [number]": function() {
-      return " MONTH( " + this.getColumnName()() + " ) = ";
-    },
     "Not Equal To": function() {
       return " != " + this.getFormattedComparison();
     },
-    "Older than [days]": function() {
+    "*After Next [Days]": function() {
+      return " DateAdd(d," + this.getComparison()() + "," + this.getColumnName()() + " ) > GetDate";
+    },
+    "*Months Equals [number]": function() {
+      return " MONTH( " + this.getColumnName()() + " ) = ";
+    },
+    "*Older than [days]": function() {
       return "";
     },
-    "On or After": function() {
+    "*On or After": function() {
       return "";
     },
-    "On or Before": function() {
+    "*On or Before": function() {
       return "";
     },
-    "Within Last [days]": function() {
+    "*Within Last [days]": function() {
       return "";
     },
-    "Within Next [days]": function() {
+    "*Within Next [days]": function() {
       return "";
     },
     "Years Equals [number]": function() {
@@ -158,7 +158,6 @@
   Condition = (function() {
 
     function Condition(params) {
-      this.toObject = __bind(this.toObject, this);
       this.toString = __bind(this.toString, this);
       this.getOpAndComp = __bind(this.getOpAndComp, this);
       this.getComparison = __bind(this.getComparison, this);
@@ -178,7 +177,7 @@
       this[')'] = params[')'] || "";
       this.seperator = ko.observable(params['Seperator'] || "");
       this.Seperator = params['Seperator'] || "";
-      this.Statement = this.toString();
+      this.Statement = this.getStatement();
     }
 
     Condition.prototype.setStartParen = function(parens) {
@@ -360,7 +359,7 @@
     };
 
     Condition.prototype.statementTemplate = function() {
-      return '<span data-bind="text: selectedCondition.toString()"></span><input type="hidden" data-bind="value: selectedCondition.toString()">';
+      return '<span data-bind="text: selectedCondition.getStatement()"></span><input type="hidden" data-bind="value: selectedCondition.toString()">';
     };
 
     Condition.prototype.getStatement = function(elem, op, value) {
@@ -369,26 +368,21 @@
       if (operation === 'get') {
         return $(elem).filter("input").val();
       } else {
-        this.Statement = this.toString();
-        return this.toString();
+        return this.Statement = " " + (this.startParen()) + " " + (this.columnName()) + " " + (this.getOpAndComp()) + " " + (this.endParen()) + " " + (this.getSeperator()) + " ";
       }
     };
 
     Condition.prototype.toString = function() {
-      this.Statement = " " + (this.startParen()) + " " + (this.columnName()) + " " + (this.getOpAndComp()) + " " + (this.endParen()) + " " + (this.getSeperator()) + " ";
-      return this.Statement;
-    };
-
-    Condition.prototype.toObject = function() {
-      return {
+      return JSON.stringify({
         ID: this.ID,
         '(': this['('],
         Column: this.Column,
         Operator: this.Operator,
         Comparison: this.Comparison,
         ')': this[')'],
-        Seperator: this.Seperator
-      };
+        Seperator: this.Seperator,
+        type: this.getDataType()
+      });
     };
 
     return Condition;
@@ -495,7 +489,7 @@
         url: ACT_DATA_URL,
         data: {
           action: "GetContactsByQuery",
-          where: this.conditions().join("")
+          where: "[" + this.conditions().join(",") + "]"
         },
         type: 'GET',
         dataType: 'jsonp',
@@ -522,12 +516,7 @@
     };
 
     App.prototype.validateStatement = function() {
-      try {
-        SQLParser.parse("SELECT * FROM Contacts WHERE " + this.conditions().join(""));
-        return [true, ""];
-      } catch (error) {
-        return [false, "Criteria is wrong: " + error.toString().split(":")[2]];
-      }
+      return [true, ""];
     };
 
     App.prototype.validateParens = function() {
