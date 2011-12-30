@@ -1,17 +1,51 @@
 (function() {
-  var App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions, savedColumns,
+  var ACT_DATA_URL, App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions, savedColumns,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
 
   window.COLUMN_KEY_NAMES = "defaultColumns";
 
-  defaultColumns = ["FirstName", "Active", "LastUpdated"];
+  window.allColumns = [];
+
+  ACT_DATA_URL = "/act/ACT_Schema.cfm";
+
+  defaultColumns = ["93", "3", "5"];
 
   savedColumns = $.jStorage.get(COLUMN_KEY_NAMES, defaultColumns);
 
+  window.sortByAlpha = function(toSort) {
+    var reA, reN;
+    reA = /[^a-zA-Z]/g;
+    reN = /[^0-9]/g;
+    return toSort.sort(function(aa, bb) {
+      var a, aA, aN, b, bA, bN;
+      a = aa.name;
+      b = bb.name;
+      aA = a.replace(reA, "");
+      bA = b.replace(reA, "");
+      if (aA === bA) {
+        aN = parseInt(a.replace(reN, ""), 10);
+        bN = parseInt(b.replace(reN, ""), 10);
+        if (aN === bN) {
+          return 0;
+        } else if (aN > bN) {
+          return 1;
+        } else {
+          return -1;
+        }
+      } else {
+        if (aA > bA) {
+          return 1;
+        } else {
+          return -1;
+        }
+      }
+    });
+  };
+
   columnTypes = {
-    int: {
+    CF_SQL_INTEGER: {
       "Contains Data": [],
       "Does Not Contain Data": [],
       "Equal To": [""],
@@ -21,7 +55,7 @@
       "Less Than or Equal To": [""],
       "Not Equal To": [""]
     },
-    varchar: {
+    CF_SQL_VARCHAR: {
       "Contains": [""],
       "Contains Data": [],
       "Does Not Contain Data": [],
@@ -34,7 +68,7 @@
       "Not Equal To": [""],
       "Starts With": [""]
     },
-    datetime: {
+    CF_SQL_TIMESTAMP: {
       "After Next [Days]": [""],
       "Contains Data": [],
       "Days Equal": [""],
@@ -49,7 +83,7 @@
       "Within Next [days]": [""],
       "Years Equals [number]": [""]
     },
-    bit: {
+    CF_SQL_BIT: {
       "Equal To": ["True", "False"]
     }
   };
@@ -128,6 +162,7 @@
       this.getOpAndComp = __bind(this.getOpAndComp, this);
       this.getComparison = __bind(this.getComparison, this);
       this.operatorTemplate = __bind(this.operatorTemplate, this);
+      this.getColumnID = __bind(this.getColumnID, this);
       this.setOperatorByEvent = __bind(this.setOperatorByEvent, this);      this.ID = params['ID'] || 0;
       this.startParen = ko.observable(params['('] || "");
       this['('] = params['('] || "";
@@ -188,6 +223,19 @@
       return this.columnName;
     };
 
+    Condition.prototype.getColumnID = function() {
+      var _this = this;
+      return ko.computed(function() {
+        var cid, column, id;
+        cid = 0;
+        for (id in allColumns) {
+          column = allColumns[id];
+          if (column.name === _this.getColumnName()()) cid = id;
+        }
+        return cid;
+      });
+    };
+
     Condition.prototype.getOperator = function(elem, op, value) {
       var operation;
       operation = op || "";
@@ -223,8 +271,8 @@
         return o.name === "Comparison";
       })[0].editrules = {
         required: true,
-        number: this.getDataType() === "int",
-        date: this.getDataType() === "datetime"
+        number: this.getDataType() === "CF_SQL_INTEGER",
+        date: this.getDataType() === "CF_SQL_TIMESTAMP"
       };
       if (operation === 'get') {
         return $(elem).filter("input").val();
@@ -237,15 +285,15 @@
     Condition.prototype.getFormattedComparison = function() {
       var x;
       x = null;
-      if (this.getDataType() === 'varchar') {
+      if (this.getDataType() === "CF_SQL_VARCHAR") {
         x = this.comparison().singleQuoted();
-      } else if (this.getDataType() === 'bit') {
+      } else if (this.getDataType() === "CF_SQL_BIT") {
         if (this.comparison() === "True") {
           x = 1;
         } else {
           x = 0;
         }
-      } else if (this.getDataType() === 'datetime' && this.presetComparison() === "") {
+      } else if (this.getDataType() === "CF_SQL_TIMESTAMP" && this.presetComparison() === "") {
         x = this.comparison().singleQuoted();
       } else {
         x = this.comparison();
@@ -263,27 +311,16 @@
     };
 
     Condition.prototype.getPresetComparison = function() {
-      if (this.getDataType() === 'bit') {
+      if (this.getDataType() === "CF_SQL_BIT") {
         this.setComparison(this.presetComparison());
       }
-      if (this.getDataType() === 'datetime' && this.presetComparison() !== "") {
+      if (this.getDataType() === "CF_SQL_TIMESTAMP" && this.presetComparison() !== "") {
         this.setComparison(this.presetComparison());
       }
       return this.presetComparison;
     };
 
     Condition.prototype.comparisonTemplate = function(value, options) {
-      setTimeout(function() {
-        return $("input[name=Comparison]").datepicker({
-          showAnim: function() {
-            if (Main.selectedCondition.getDataType() !== 'datetime') {
-              return 'hide';
-            } else {
-              return 'show';
-            }
-          }
-        });
-      }, 50);
       return '<input class="datePicker" size="11" type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()"><select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select>';
     };
 
@@ -306,8 +343,8 @@
     };
 
     Condition.prototype.getDataType = function() {
-      if (this.columnName() in allColumns) {
-        return allColumns[this.columnName()];
+      if (this.getColumnID()() in allColumns) {
+        return allColumns[this.getColumnID()()].type;
       } else {
         return "";
       }
@@ -349,13 +386,13 @@
 
   Column = (function() {
 
-    function Column(name, type, index) {
-      this.viewName = ko.observable(name);
-      this.dataType = ko.observable(type);
-      this.index = name;
-      this.name = name;
+    function Column(id, params, index) {
+      this.id = id;
+      this.viewName = ko.observable(params.name);
+      this.dataType = ko.observable(params.type);
+      this.index = params.name;
+      this.name = params.name;
       this.hidden = index === -1;
-      this.index = index;
     }
 
     Column.prototype.getViewName = function() {
@@ -382,26 +419,21 @@
       this.selectCondition = __bind(this.selectCondition, this);
       this.afterInsertRow = __bind(this.afterInsertRow, this);
       this.onCellSelect = __bind(this.onCellSelect, this);
-      var allColumns, n, t;
+      var id, params;
       this.conditions = ko.observableArray(dataArr);
-      allColumns = {
-        "FirstName": "varchar",
-        "EmployeeCount": "int",
-        "LastUpdated": "datetime",
-        "Active": "bit"
-      };
       this.columns = ko.observableArray((function() {
         var _results;
         _results = [];
-        for (n in allColumns) {
-          t = allColumns[n];
-          _results.push(new Column(n, t, savedColumns.indexOf(n)));
+        for (id in allColumns) {
+          params = allColumns[id];
+          _results.push(new Column(id, params, savedColumns.indexOf(id)));
         }
         return _results;
       })());
+      sortByAlpha(this.columns);
       this.selectedCondition = new Condition(emptyCondition);
-      this.contacts = ko.observableArray();
       this.contactsModel = this.columns();
+      this.contacts = ko.observableArray();
       this.previewRecords();
     }
 
@@ -447,21 +479,21 @@
     App.prototype.previewRecords = function() {
       var _this = this;
       return $.ajax({
-        url: "getContactsByQuery.cfm",
+        url: ACT_DATA_URL,
         data: {
+          action: "GetContactsByQuery",
           where: this.conditions().join("")
         },
-        complete: function(data) {
-          var i, _results;
+        type: 'GET',
+        dataType: 'jsonp',
+        jsonp: 'callback',
+        success: function(data) {
+          var contact, _i, _len, _results;
           _this.contacts.removeAll();
           _results = [];
-          for (i = 1; i <= 10; i++) {
-            _results.push(_this.contacts.push({
-              FirstName: "Richard" + i,
-              LastUpdated: "02/" + i + "/2010",
-              Active: Math.random() > 0.5 ? true : false,
-              EmployeeCount: Math.round(i * Math.random(), 2)
-            }));
+          for (_i = 0, _len = data.length; _i < _len; _i++) {
+            contact = data[_i];
+            _results.push(_this.contacts.push(contact));
           }
           return _results;
         }
@@ -517,26 +549,8 @@
       "ID": 1,
       "(": "(",
       "Column": "FirstName",
-      "Operator": "Equal To",
-      "Comparison": "richard",
-      ")": ")",
-      "Seperator": "OR",
-      "Statement": ""
-    }), new Condition({
-      "ID": 2,
-      "(": "(",
-      "Column": "LastUpdated",
-      "Operator": "Equal To",
-      "Comparison": "01/01/2012",
-      ")": ")",
-      "Seperator": "OR",
-      "Statement": ""
-    }), new Condition({
-      "ID": 3,
-      "(": "(",
-      "Column": "Active",
-      "Operator": "Equal To",
-      "Comparison": "1",
+      "Operator": "Contains Data",
+      "Comparison": "",
       ")": ")",
       "Seperator": "",
       "Statement": ""
@@ -544,8 +558,20 @@
   ];
 
   $(function() {
-    window["Main"] = new App();
-    return ko.applyBindings(Main);
+    return $.ajax({
+      url: ACT_DATA_URL,
+      data: {
+        action: "GetViewColumns"
+      },
+      type: 'GET',
+      dataType: 'jsonp',
+      jsonp: 'callback',
+      success: function(data) {
+        window['allColumns'] = data;
+        window["Main"] = new App();
+        return ko.applyBindings(Main);
+      }
+    });
   });
 
 }).call(this);

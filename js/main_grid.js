@@ -105,7 +105,7 @@
 										var defaultColumns = []
 										this.jqGrid("getGridParam","colModel").map(function(col){
 											if (!col.hidden)
-												defaultColumns.push(col.name);
+												defaultColumns.push(col.id);
 										})
 										$.jStorage.set(COLUMN_KEY_NAMES, defaultColumns);
 									}

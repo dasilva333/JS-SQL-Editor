@@ -1,11 +1,28 @@
 window.defaultCaption = "--Select--"  
 window.COLUMN_KEY_NAMES = "defaultColumns"
-  
-defaultColumns = ["FirstName","Active","LastUpdated"]  
+window.allColumns = []
+
+ACT_DATA_URL = "/act/ACT_Schema.cfm"  
+defaultColumns = ["93","3","5"] ##ACT_ID, FirstName, LastName  
 savedColumns = $.jStorage.get(COLUMN_KEY_NAMES, defaultColumns);
+
+window.sortByAlpha = (toSort) ->
+  reA = /[^a-zA-Z]/g
+  reN = /[^0-9]/g
+  toSort.sort (aa, bb) ->
+    a = aa.name
+    b = bb.name
+    aA = a.replace(reA, "")
+    bA = b.replace(reA, "")
+    if(aA is bA)
+      aN = parseInt(a.replace(reN, ""), 10)
+      bN = parseInt(b.replace(reN, ""), 10)
+      if (aN is bN) then 0 else if (aN > bN) then 1 else -1
+    else
+      if (aA > bA) then 1 else -1
   
 columnTypes =
-  int:
+  CF_SQL_INTEGER:
     "Contains Data": []
     "Does Not Contain Data": []
     "Equal To": [""]
@@ -14,7 +31,7 @@ columnTypes =
     "Less Than": [""]
     "Less Than or Equal To": [""]
     "Not Equal To": [""]
-  varchar: 
+  CF_SQL_VARCHAR: 
     "Contains": [""]
     "Contains Data": []
     "Does Not Contain Data": []
@@ -26,7 +43,7 @@ columnTypes =
     "Less Than or Equal To": [""]
     "Not Equal To": [""]
     "Starts With": [""]
-  datetime:  
+  CF_SQL_TIMESTAMP:  
     "After Next [Days]" : [""]
     "Contains Data": []
     "Days Equal": [""]
@@ -40,7 +57,7 @@ columnTypes =
     "Within Last [days]": [""]
     "Within Next [days]": [""]
     "Years Equals [number]": [""]
-  bit: 
+  CF_SQL_BIT: 
     "Equal To": ["True", "False"]
 
 operatorDefinitions = 
@@ -120,6 +137,15 @@ class Condition
      
   getColumnName: ->
     @columnName
+  
+  getColumnID: =>
+    ko.computed(=>
+      cid = 0;
+      for id,column of allColumns
+        if column.name is @getColumnName()() 
+          cid = id
+      cid    
+    ) 
     
   getOperator: (elem, op, value) ->
     operation = op || "";
@@ -141,8 +167,8 @@ class Condition
       o.name is "Comparison"
     )[0].editrules = {
       required: true
-      number: (@getDataType() is "int")
-      date: (@getDataType() is "datetime")
+      number: (@getDataType() is "CF_SQL_INTEGER")
+      date: (@getDataType() is "CF_SQL_TIMESTAMP")
     }
     if(operation is 'get')
       $(elem).filter("input").val();
@@ -152,14 +178,14 @@ class Condition
  
   getFormattedComparison: ->
     x = null
-    if (@getDataType() is 'varchar')
+    if (@getDataType() is "CF_SQL_VARCHAR")
       x = @comparison().singleQuoted()
-    else if (@getDataType() is 'bit')
+    else if (@getDataType() is "CF_SQL_BIT")
       if @comparison() is "True"
         x = 1
       else  
         x = 0;  
-    else if (@getDataType() is 'datetime' and @presetComparison() is "")
+    else if (@getDataType() is "CF_SQL_TIMESTAMP" and @presetComparison() is "")
       x = @comparison().singleQuoted()
     else
       x = @comparison()
@@ -172,19 +198,20 @@ class Condition
       comps = []
       
   getPresetComparison: ->
-    if (@getDataType() is 'bit')
+    if (@getDataType() is "CF_SQL_BIT")
       @setComparison @presetComparison()
-    if (@getDataType() is 'datetime' and @presetComparison() isnt "")
+    if (@getDataType() is "CF_SQL_TIMESTAMP" and @presetComparison() isnt "")
       @setComparison @presetComparison() ##Once I figure out the parser bug I'll set it to @Today
     @presetComparison
   
   comparisonTemplate: (value, options) ->
-    setTimeout(->
-      $("input[name=Comparison]").datepicker
-          showAnim: ->
-            ##Todo Figure out why I cant reference this or @ from inside here
-            if (Main.selectedCondition.getDataType() isnt 'datetime') then 'hide' else 'show'
-    ,50) 
+    ## TODO disable numeric validation if its disabled
+    ##setTimeout(->
+    ##  $("input[name=Comparison]").datepicker
+    ##      showAnim: ->
+    ##        ##Todo Figure out why I cant reference this or @ from inside here
+    ##        if (Main.selectedCondition.getDataType() isnt "CF_SQL_TIMESTAMP") then 'hide' else 'show'
+    ##,50) 
     '<input class="datePicker" size="11" type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()"><select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select>'
 
    
@@ -203,7 +230,7 @@ class Condition
     @seperator()
     
   getDataType: ->
-    if (@columnName() of allColumns) then allColumns[ @columnName() ] else ""
+    if (@getColumnID()() of allColumns) then allColumns[ @getColumnID()() ].type else ""
       
   getOpAndComp: =>
     if (@operator() is "" or typeof @operator() is "undefined") then "" else operatorDefinitions[@getOperator()()].apply(@)
@@ -227,13 +254,13 @@ Condition = Condition;
 
 class Column
 
-  constructor: (name,type,index) ->
-    @viewName = ko.observable name
-    @dataType = ko.observable type
-    @index = name
-    @name = name
+  constructor: (id,params,index) ->
+    @id = id
+    @viewName = ko.observable params.name
+    @dataType = ko.observable params.type
+    @index = params.name
+    @name = params.name
     @hidden = index is -1
-    @index = index
   
   getViewName: ->
     @viewName
@@ -246,16 +273,13 @@ class App
   self = @
   constructor: ->
     @conditions = ko.observableArray(dataArr)
-    allColumns =
-      "FirstName": "varchar"
-      "EmployeeCount": "int"
-      "LastUpdated": "datetime" 
-      "Active": "bit"
-    @columns = ko.observableArray(new Column n,t,savedColumns.indexOf(n) for n,t of allColumns)
+    @columns = ko.observableArray((new Column id,params,savedColumns.indexOf(id) for id,params of allColumns))
+    sortByAlpha(@columns)
     @selectedCondition = new Condition(emptyCondition)
-    @contacts = ko.observableArray()
     @contactsModel = @columns()
+    @contacts = ko.observableArray()
     @previewRecords()
+    
       
   getConditions: ->
     @conditions
@@ -264,6 +288,7 @@ class App
     @columns
   
   getGridColumns: ->
+    ##TODO figure out how to implement sorting from here: http://my.opera.com/GreyWyvern/blog/show.dml/1671288
     ":;" + @columns().join(";")
   
   onCellSelect: => 
@@ -288,19 +313,17 @@ class App
     
   previewRecords: ->
     $.ajax(
-      url: "getContactsByQuery.cfm"
+      url: ACT_DATA_URL
       data:
+        action: "GetContactsByQuery"
         where: @conditions().join("")
-      complete: (data) =>
-        ##TODO, process data into an array. maybe add paged records
+      type: 'GET'
+      dataType: 'jsonp'
+      jsonp: 'callback',
+      success: (data) =>
         @contacts.removeAll()
-        for i in [1..10] 
-          @contacts.push(
-              FirstName: "Richard" + i
-              LastUpdated : "02/" + i + "/2010"
-              Active: if Math.random() > 0.5 then true else false
-              EmployeeCount: Math.round(i * Math.random(),2) 
-          )
+        for contact in data
+          @contacts.push(contact)
     )
     
   validateSeperator: =>
@@ -324,7 +347,7 @@ class App
       [false, "Parenthesis aren't both set"]
     else
       [true, ""]     
-        
+
 emptyCondition = {
   "ID": "new_row",
   "(": "",
@@ -341,34 +364,25 @@ dataArr = [
     "ID": 1,
     "(": "(",
     "Column": "FirstName",
-    "Operator": "Equal To",
-    "Comparison": "richard",
+    "Operator": "Contains Data",
+    "Comparison": "",
     ")": ")",
-    "Seperator": "OR",
-    "Statement": "",
-  }),
-  new Condition({
-    "ID": 2
-    "(": "(",
-    "Column": "LastUpdated",
-    "Operator": "Equal To",
-    "Comparison": "01/01/2012",
-    ")": ")",
-    "Seperator": "OR",
-    "Statement": "",
-  }),
-  new Condition({
-    "ID": 3,
-    "(": "(",
-    "Column": "Active",
-    "Operator": "Equal To",
-    "Comparison": "1",
-    ")": ")",
-    "Seperator": "",
+    "Seperator": "", 
     "Statement": "",
   })
-]    
+]
+
 $ ->
-  window["Main"] = new App()
-  ko.applyBindings Main
+  $.ajax(
+    url: ACT_DATA_URL
+    data:
+      action: "GetViewColumns"
+    type: 'GET'
+    dataType: 'jsonp'
+    jsonp: 'callback',
+    success: (data) ->
+      window['allColumns'] = data
+      window["Main"] = new App()
+      ko.applyBindings Main
+  )
   
