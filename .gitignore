@@ -1,5 +1,4 @@
 # mac
-.DS_Store
 *.orig
 *.tmp_*
 
@@ -12,3 +11,19 @@ dwsync.xml
 *.swp
 .sass-cache/*
 *.cmd
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+
+# OS generated files #
+######################
+.DS_Store*
+ehthumbs.db
+Icon?
+Thumbs.db
+
+# Private Files
+private.js

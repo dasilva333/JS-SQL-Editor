@@ -1,6 +1,6 @@
 (function() {
-  var ACT_DATA_URL, App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions, savedColumns,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var ACT_DATA_URL, App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions, savedColumns;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
 
@@ -8,7 +8,7 @@
 
   window.allColumns = [];
 
-  ACT_DATA_URL = "/act/ACT_Schema.cfm";
+  ACT_DATA_URL = private_URL || "/act/ACT_Schema.cfm";
 
   defaultColumns = ["93", "3", "5"];
 
@@ -158,6 +158,7 @@
   Condition = (function() {
 
     function Condition(params) {
+      this.toObject = __bind(this.toObject, this);
       this.toString = __bind(this.toString, this);
       this.getOpAndComp = __bind(this.getOpAndComp, this);
       this.getComparison = __bind(this.getComparison, this);
@@ -270,7 +271,7 @@
       $("#conditionsGrid").jqGrid("getGridParam", "colModel").filter(function(o) {
         return o.name === "Comparison";
       })[0].editrules = {
-        required: true,
+        required: false,
         number: this.getDataType() === "CF_SQL_INTEGER",
         date: this.getDataType() === "CF_SQL_TIMESTAMP"
       };
@@ -376,6 +377,18 @@
     Condition.prototype.toString = function() {
       this.Statement = " " + (this.startParen()) + " " + (this.columnName()) + " " + (this.getOpAndComp()) + " " + (this.endParen()) + " " + (this.getSeperator()) + " ";
       return this.Statement;
+    };
+
+    Condition.prototype.toObject = function() {
+      return {
+        ID: this.ID,
+        '(': this['('],
+        Column: this.Column,
+        Operator: this.Operator,
+        Comparison: this.Comparison,
+        ')': this[')'],
+        Seperator: this.Seperator
+      };
     };
 
     return Condition;

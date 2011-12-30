@@ -2,7 +2,7 @@ window.defaultCaption = "--Select--"
 window.COLUMN_KEY_NAMES = "defaultColumns"
 window.allColumns = []
 
-ACT_DATA_URL = "/act/ACT_Schema.cfm"  
+ACT_DATA_URL = private_URL || "/act/ACT_Schema.cfm"  
 defaultColumns = ["93","3","5"] ##ACT_ID, FirstName, LastName  
 savedColumns = $.jStorage.get(COLUMN_KEY_NAMES, defaultColumns);
 
@@ -166,7 +166,7 @@ class Condition
     $("#conditionsGrid").jqGrid("getGridParam","colModel").filter((o) -> 
       o.name is "Comparison"
     )[0].editrules = {
-      required: true
+      required: false
       number: (@getDataType() is "CF_SQL_INTEGER")
       date: (@getDataType() is "CF_SQL_TIMESTAMP")
     }
@@ -249,6 +249,15 @@ class Condition
   toString: =>
     @Statement = " #{ @startParen() } #{ @columnName() } #{ @getOpAndComp() } #{ @endParen() } #{ @getSeperator() } "
     @Statement
+  
+  toObject: =>
+    ID: @ID
+    '(': @['(']
+    Column: @Column 
+    Operator: @Operator
+    Comparison: @Comparison
+    ')': @[')']
+    Seperator: @Seperator
     
 Condition = Condition;
 

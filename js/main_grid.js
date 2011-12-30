@@ -17,6 +17,7 @@
 				colModel: value.colModel,
 				cmTemplate: { align: "center" },
 				pager: value.pager,
+				rowNum: value.editor ? 100 : 5,
 				onSelectRow: function (id) {
 					if (value.editor == true){
 						var item = $(element).jqGrid('getLocalRow', id);
