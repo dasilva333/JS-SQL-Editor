@@ -1,5 +1,5 @@
 (function() {
-  var ACT_DATA_URL, App, Column, Condition, columnTypes, dataArr, defaultColumns, emptyCondition, operatorDefinitions, savedColumns,
+  var ACT_DATA_URL, App, Column, Condition, Group, columnTypes, defaultColumns, emptyCondition, emptyGroup, operatorDefinitions, savedColumns,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
@@ -7,6 +7,8 @@
   window.COLUMN_KEY_NAMES = "defaultColumns";
 
   window.allColumns = [];
+
+  window.allGroups = [];
 
   ACT_DATA_URL = typeof private_URL !== "undefined" ? private_URL : "/act/ACT_Schema.cfm";
 
@@ -149,6 +151,23 @@
     "Less Than or Equal To": function() {
       return " =< " + this.getComparison()();
     }
+  };
+
+  emptyCondition = {
+    "ID": "new_row",
+    "(": "",
+    "Column": "",
+    "Operator": "",
+    "Comparison": "",
+    ")": "",
+    "Seperator": "",
+    "Statement": ""
+  };
+
+  emptyGroup = {
+    "GroupId": "new_row",
+    "Name": "",
+    "Description": ""
   };
 
   String.prototype.singleQuoted = function() {
@@ -359,7 +378,7 @@
     };
 
     Condition.prototype.statementTemplate = function() {
-      return '<span data-bind="text: selectedCondition.getStatement()"></span><input type="hidden" data-bind="value: selectedCondition.toString()">';
+      return '<span data-bind="text: selectedCondition.getStatement()"></span><input type="hidden" data-bind="value: selectedCondition.getStatement()">';
     };
 
     Condition.prototype.getStatement = function(elem, op, value) {
@@ -414,6 +433,18 @@
 
   })();
 
+  Group = (function() {
+
+    function Group(id, params) {
+      this.GroupID = id;
+      this.Name = params.Name;
+      this.Description = params.Description;
+    }
+
+    return Group;
+
+  })();
+
   App = (function() {
     var self;
 
@@ -424,10 +455,12 @@
       this.validateStatement = __bind(this.validateStatement, this);
       this.validateSeperator = __bind(this.validateSeperator, this);
       this.selectCondition = __bind(this.selectCondition, this);
+      this.selectGroup = __bind(this.selectGroup, this);
       this.afterInsertRow = __bind(this.afterInsertRow, this);
       this.onCellSelect = __bind(this.onCellSelect, this);
       var id, params;
-      this.conditions = ko.observableArray(dataArr);
+      this.conditions = ko.observableArray();
+      this.selectedCondition = new Condition(emptyCondition);
       this.columns = ko.observableArray((function() {
         var _results;
         _results = [];
@@ -438,10 +471,30 @@
         return _results;
       })());
       sortByAlpha(this.columns);
-      this.selectedCondition = new Condition(emptyCondition);
       this.contactsModel = this.columns();
       this.contacts = ko.observableArray();
       this.previewRecords();
+      this.groups = ko.observableArray((function() {
+        var _results;
+        _results = [];
+        for (id in allGroups) {
+          params = allGroups[id];
+          _results.push(new Group(id, params));
+        }
+        return _results;
+      })());
+      this.selectedGroup = new Group(0, emptyGroup);
+      this.groupsModel = [
+        {
+          name: "GroupID",
+          width: 60
+        }, {
+          name: "Name"
+        }, {
+          name: "Description",
+          hidden: true
+        }
+      ];
     }
 
     App.prototype.getConditions = function() {
@@ -475,6 +528,29 @@
       }, 250);
     };
 
+    App.prototype.selectGroup = function(ID) {
+      var _this = this;
+      return $.ajax({
+        url: ACT_DATA_URL,
+        data: {
+          action: "GetGroupById",
+          GroupID: ID
+        },
+        type: 'GET',
+        dataType: 'jsonp',
+        jsonp: 'callback',
+        success: function(data) {
+          var condition, _i, _len;
+          _this.conditions.removeAll();
+          for (_i = 0, _len = data.length; _i < _len; _i++) {
+            condition = data[_i];
+            _this.conditions.push(new Condition(condition));
+          }
+          return _this.previewRecords();
+        }
+      });
+    };
+
     App.prototype.selectCondition = function(selectedItem) {
       if (selectedItem.ID !== "new_row") {
         this.selectedCondition = selectedItem;
@@ -485,26 +561,28 @@
 
     App.prototype.previewRecords = function() {
       var _this = this;
-      return $.ajax({
-        url: ACT_DATA_URL,
-        data: {
-          action: "GetContactsByQuery",
-          where: "[" + this.conditions().join(",") + "]"
-        },
-        type: 'GET',
-        dataType: 'jsonp',
-        jsonp: 'callback',
-        success: function(data) {
-          var contact, _i, _len, _results;
-          _this.contacts.removeAll();
-          _results = [];
-          for (_i = 0, _len = data.length; _i < _len; _i++) {
-            contact = data[_i];
-            _results.push(_this.contacts.push(contact));
+      if (this.conditions().length > 0) {
+        return $.ajax({
+          url: ACT_DATA_URL,
+          data: {
+            action: "GetContactsByQuery",
+            where: "[" + this.conditions().join(",") + "]"
+          },
+          type: 'GET',
+          dataType: 'jsonp',
+          jsonp: 'callback',
+          success: function(data) {
+            var contact, _i, _len, _results;
+            _this.contacts.removeAll();
+            _results = [];
+            for (_i = 0, _len = data.length; _i < _len; _i++) {
+              contact = data[_i];
+              _results.push(_this.contacts.push(contact));
+            }
+            return _results;
           }
-          return _results;
-        }
-      });
+        });
+      }
     };
 
     App.prototype.validateSeperator = function() {
@@ -516,7 +594,15 @@
     };
 
     App.prototype.validateStatement = function() {
-      return [true, ""];
+      var statement;
+      try {
+        statement = "SELECT * FROM Contacts WHERE " + (this.conditions().map(function(o) {
+          return o.getStatement();
+        })).join("");
+        return SQLParser.parse(statement);
+      } catch (error) {
+        return [false, "Criteria is wrong: " + error.toString().split(":")[2]];
+      }
     };
 
     App.prototype.validateParens = function() {
@@ -535,41 +621,18 @@
 
   })();
 
-  emptyCondition = {
-    "ID": "new_row",
-    "(": "",
-    "Column": "",
-    "Operator": "",
-    "Comparison": "",
-    ")": "",
-    "Seperator": "",
-    "Statement": ""
-  };
-
-  dataArr = [
-    new Condition({
-      "ID": 1,
-      "(": "(",
-      "Column": "FirstName",
-      "Operator": "Contains Data",
-      "Comparison": "",
-      ")": ")",
-      "Seperator": "",
-      "Statement": ""
-    })
-  ];
-
   $(function() {
     return $.ajax({
       url: ACT_DATA_URL,
       data: {
-        action: "GetViewColumns"
+        action: "GetViewColumnsAndGroups"
       },
       type: 'GET',
       dataType: 'jsonp',
       jsonp: 'callback',
       success: function(data) {
-        window['allColumns'] = data;
+        window['allColumns'] = data.schema;
+        window['allGroups'] = data.groups;
         window["Main"] = new App();
         return ko.applyBindings(Main);
       }

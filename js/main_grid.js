@@ -17,7 +17,8 @@
 				colModel: value.colModel,
 				cmTemplate: { align: "center" },
 				pager: value.pager,
-				rowNum: value.editor ? 100 : 5,
+				//TODO Investigate virtual scrolling for groups
+				rowNum: value.rowNum,
 				onSelectRow: function (id) {
 					if (value.editor == true){
 						var item = $(element).jqGrid('getLocalRow', id);
@@ -82,6 +83,7 @@
 							   newItem.ID = dataArr.length + 1; 
 							   value.data.unshift(newItem);
 							   lastsel = null;
+							   Main.selectedCondition = null;
 						   }
 					   }
 					})

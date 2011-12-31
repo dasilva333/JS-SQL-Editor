@@ -1,10 +1,11 @@
 window.defaultCaption = "--Select--"  
 window.COLUMN_KEY_NAMES = "defaultColumns"
 window.allColumns = []
+window.allGroups = []
 ACT_DATA_URL = if (typeof private_URL != "undefined") then private_URL else "/act/ACT_Schema.cfm"  
     
 defaultColumns = ["93","3","5"] ##ACT_ID, FirstName, LastName  
-savedColumns = $.jStorage.get(COLUMN_KEY_NAMES, defaultColumns);
+savedColumns = $.jStorage.get(COLUMN_KEY_NAMES, defaultColumns)
 
 window.sortByAlpha = (toSort) ->
   reA = /[^a-zA-Z]/g
@@ -81,6 +82,22 @@ operatorDefinitions =
     "Less Than": -> " < " + @getComparison()()
     "Greater Than or Equal To": -> " => " + @getComparison()()
     "Less Than or Equal To": -> " =< " + @getComparison()()
+
+emptyCondition = {
+  "ID": "new_row"
+  "(": ""
+  "Column": ""
+  "Operator": ""
+  "Comparison": ""
+  ")": ""
+  "Seperator": ""
+  "Statement": ""
+}
+emptyGroup = {
+  "GroupId": "new_row"
+  "Name": ""
+  "Description": ""
+}
     
 String::singleQuoted = ->
   "'#{ this }'"
@@ -140,7 +157,7 @@ class Condition
   
   getColumnID: =>
     ko.computed(=>
-      cid = 0;
+      cid = 0
       for id,column of allColumns
         if column.name is @getColumnName()() 
           cid = id
@@ -148,9 +165,9 @@ class Condition
     ) 
     
   getOperator: (elem, op, value) ->
-    operation = op || "";
+    operation = op || ""
     if(operation is 'get')
-      $(elem).val();
+      $(elem).val()
     else
       @Operator = @operator()
       @operator  
@@ -162,7 +179,7 @@ class Condition
     '<select data-bind="options: selectedCondition.getOperators(), value: selectedCondition.operator, optionsCaption: defaultCaption"></select>'
     
   getComparison: (elem, op, value) =>
-    operation = op || "";
+    operation = op || ""
     $("#conditionsGrid").jqGrid("getGridParam","colModel").filter((o) -> 
       o.name is "Comparison"
     )[0].editrules = {
@@ -171,7 +188,7 @@ class Condition
       date: (@getDataType() is "CF_SQL_TIMESTAMP")
     }
     if(operation is 'get')
-      $(elem).filter("input").val();
+      $(elem).filter("input").val()
     else
       @Comparison = @comparison()
       @comparison    
@@ -204,17 +221,15 @@ class Condition
       @setComparison @presetComparison() ##Once I figure out the parser bug I'll set it to @Today
     @presetComparison
   
-  comparisonTemplate: (value, options) ->
-    ## TODO disable numeric validation if its disabled
+  comparisonTemplate: (value, options) -> 
     ##setTimeout(->
     ##  $("input[name=Comparison]").datepicker
+    ##      constrainInput: false
     ##      showAnim: ->
-    ##        ##Todo Figure out why I cant reference this or @ from inside here
     ##        if (Main.selectedCondition.getDataType() isnt "CF_SQL_TIMESTAMP") then 'hide' else 'show'
-    ##,50) 
+    ##,50)     
     '<input class="datePicker" size="11" type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()"><select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select>'
 
-   
   showPresetComparisons: ->
     @getComparisons().length > 0
   
@@ -236,12 +251,12 @@ class Condition
     if (@operator() is "" or typeof @operator() is "undefined") then "" else operatorDefinitions[@getOperator()()].apply(@)
 
   statementTemplate: ->
-    '<span data-bind="text: selectedCondition.getStatement()"></span><input type="hidden" data-bind="value: selectedCondition.toString()">'  
+    '<span data-bind="text: selectedCondition.getStatement()"></span><input type="hidden" data-bind="value: selectedCondition.getStatement()">'  
   
   getStatement: (elem, op, value) ->
-    operation = op || "";
+    operation = op || ""
     if(operation is 'get')
-      $(elem).filter("input").val();
+      $(elem).filter("input").val()
     else
       @Statement = " #{ @startParen() } #{ @columnName() } #{ @getOpAndComp() } #{ @endParen() } #{ @getSeperator() } "
   
@@ -272,31 +287,55 @@ class Column
     @viewName
   
   toString: ->
-    @viewName() + ":" + @viewName() 
+    @viewName() + ":" + @viewName()
     
+class Group
+  
+  constructor: (id,params) ->
+    @GroupID = id
+    @Name = params.Name
+    @Description = params.Description
+      
 class App
   
   self = @
   constructor: ->
-    @conditions = ko.observableArray(dataArr)
+    @conditions = ko.observableArray()
+    @selectedCondition = new Condition(emptyCondition)
+    
     @columns = ko.observableArray((new Column id,params,savedColumns.indexOf(id) for id,params of allColumns))
     sortByAlpha(@columns)
-    @selectedCondition = new Condition(emptyCondition)
+    
     @contactsModel = @columns()
     @contacts = ko.observableArray()
-    @previewRecords()
     
-      
+    @previewRecords()
+    @groups = ko.observableArray(new Group id,params for id,params of allGroups)
+    @selectedGroup = new Group(0,emptyGroup)
+    @groupsModel = [
+      {
+        name: "GroupID",
+        width: 60
+      },
+      {
+        name: "Name"
+      },
+      {
+        name: "Description"
+        hidden: true
+      }
+    ]
+    
+    
   getConditions: ->
     @conditions
-  
+
   getColumns: ->
     @columns
-  
+
   getGridColumns: ->
-    ##TODO figure out how to implement sorting from here: http://my.opera.com/GreyWyvern/blog/show.dml/1671288
     ":;" + @columns().join(";")
-  
+
   onCellSelect: => 
     if (@selectedCondition.ID isnt "new_row")
       setTimeout( =>
@@ -311,6 +350,22 @@ class App
         ko.applyBindings @, $("#" + @selectedCondition.ID).parent().get 0
     ,250)
   
+  selectGroup: (ID) =>
+    $.ajax(
+      url: ACT_DATA_URL
+      data:
+        action: "GetGroupById"
+        GroupID: ID
+      type: 'GET'
+      dataType: 'jsonp'
+      jsonp: 'callback',
+      success: (data) =>
+        @conditions.removeAll()
+        for condition in data
+          @conditions.push(new Condition(condition))
+        @previewRecords()  
+    )
+    
   selectCondition: (selectedItem) =>
     if (selectedItem.ID isnt "new_row")
       @selectedCondition = selectedItem 
@@ -318,19 +373,20 @@ class App
     true
     
   previewRecords: ->
-    $.ajax(
-      url: ACT_DATA_URL
-      data:
-        action: "GetContactsByQuery"
-        where: "[" + @conditions().join(",") + "]"
-      type: 'GET'
-      dataType: 'jsonp'
-      jsonp: 'callback',
-      success: (data) =>
-        @contacts.removeAll()
-        for contact in data
-          @contacts.push(contact)
-    )
+    if (@conditions().length > 0)
+      $.ajax(
+        url: ACT_DATA_URL
+        data:
+          action: "GetContactsByQuery"
+          where: "[" + @conditions().join(",") + "]"
+        type: 'GET'
+        dataType: 'jsonp'
+        jsonp: 'callback',
+        success: (data) =>
+          @contacts.removeAll()
+          for contact in data
+            @contacts.push(contact)
+      )
     
   validateSeperator: =>
     if (@getConditions()()[@getConditions()().length - 1] isnt @selectedCondition and @selectedCondition.Seperator is "")
@@ -339,14 +395,11 @@ class App
       [true, ""]  
     
   validateStatement: =>
-    [true, ""]
-    ##TODO fix this thing 
-    ##try
-    ##  statement = "SELECT * FROM Contacts WHERE " + ( @conditions().map( (o) -> o.getStatement() ).join("")
-    ##  console.log statement
-    ##  SQLParser.parse statement
-    ##catch error
-    ##  [false, "Criteria is wrong: " + error.toString().split(":")[2]]
+    try
+      statement = "SELECT * FROM Contacts WHERE " + ( @conditions().map (o) -> o.getStatement() ).join("")
+      SQLParser.parse statement
+    catch error
+      [false, "Criteria is wrong: " + error.toString().split(":")[2]]
  
   validateParens: =>
     start = Main.selectedCondition.getStartParen()()
@@ -357,40 +410,17 @@ class App
     else
       [true, ""]     
 
-emptyCondition = {
-  "ID": "new_row",
-  "(": "",
-  "Column": "",
-  "Operator": "",
-  "Comparison": "",
-  ")": "",
-  "Seperator": "",
-  "Statement": ""
-}
-
-dataArr = [
-  new Condition({
-    "ID": 1,
-    "(": "(",
-    "Column": "FirstName",
-    "Operator": "Contains Data",
-    "Comparison": "",
-    ")": ")",
-    "Seperator": "", 
-    "Statement": "",
-  })
-]
-
 $ ->
   $.ajax(
     url: ACT_DATA_URL
     data:
-      action: "GetViewColumns"
+      action: "GetViewColumnsAndGroups"
     type: 'GET'
     dataType: 'jsonp'
     jsonp: 'callback',
     success: (data) ->
-      window['allColumns'] = data
+      window['allColumns'] = data.schema
+      window['allGroups'] = data.groups 
       window["Main"] = new App()
       ko.applyBindings Main
   )
