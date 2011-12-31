@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>http://stackoverflow.com/questions/5322608/jqgrid-tree-view-adjacencey/5333199#5333199</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/themes/redmond/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="http://www.ok-soft-gmbh.com/jqGrid/jquery.jqGrid-4.1.2/css/ui.jqgrid.css" />
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script> 
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/jquery-ui.min.js"></script>
+
+    <script type="text/javascript" src="http://www.ok-soft-gmbh.com/jqGrid/jquery.jqGrid-4.1.2/js/i18n/grid.locale-en.js"></script>
+    <script type="text/javascript">
+        $.jgrid.no_legacy_api = true;
+        $.jgrid.useJSON = true;
+    </script>
+    <script type="text/javascript" src="js/jquery.jqGrid.min.js"></script>
+
+    <script type="text/javascript">
+    //<![CDATA[
+        $(function(){
+            'use strict';
+            var mydata = [
+                { id:"1", name:"Cash", level:"0", parent:"",  isLeaf:false, expanded:false, loaded:true },
+                { id:"2", name:"Cash 1",  level:"1", parent:"1", isLeaf:false, expanded:false, loaded:true },
+                { id:"3", name:"Sub Cash 1", level:"2", parent:"2", isLeaf:true,  expanded:false, loaded:true },
+                { id:"4", name:"Cash 2", level:"1", parent:"1", isLeaf:true,  expanded:false, loaded:true },
+                { id:"5", name:"Bank\'s", level:"0", parent:"",  isLeaf:false, expanded:true, loaded:true },
+                { id:"6", name:"Bank 1", level:"1", parent:"5", isLeaf:true,  expanded:false, loaded:true },
+                { id:"7", name:"Bank 2", level:"1", parent:"5", isLeaf:true,  expanded:false, loaded:true },
+                { id:"8", name:"Fixed asset", level:"0", parent:"",  isLeaf:true,  expanded:false, loaded:true }
+            ] 
+            $("#treegrid").jqGrid({
+                datatype: "jsonstring",
+                datastr: mydata,
+                colModel:[
+                    {name:'id', index:'id', width:1, hidden:true, key:true},
+                    {name:'name', index:'name', width:180},
+                    {name:'description', index:'description', width:80, align:"center"}
+                ],
+                height: 'auto',
+                gridview: true,
+                rowNum: 10000,
+                sortname: 'id',
+                treeGrid: true,
+                treeGridModel: 'adjacency',
+                treedatatype: "local",
+                ExpandColumn: 'name',
+                caption: "TreeGrid Adj Model",
+                jsonReader: {
+                    repeatitems: false,
+                    root: function (obj) { return obj; },
+                    page: function (obj) { return 1; },
+                    total: function (obj) { return 1; },
+                    records: function (obj) { return obj.length; }
+                }
+            });
+        });
+    //]]>
+    </script>
+</head>
+<body>
+    <table id="treegrid"><tr><td/></tr></table>
+
+</body>
+</html>

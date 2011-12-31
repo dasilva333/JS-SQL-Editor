@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>TreeGrid Model</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/themes/redmond/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="http://www.ok-soft-gmbh.com/jqGrid/jquery.jqGrid-4.1.2/css/ui.jqgrid.css" />
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script> 
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="js/private.js"></script>
+    <script type="text/javascript" src="http://www.ok-soft-gmbh.com/jqGrid/jquery.jqGrid-4.1.2/js/i18n/grid.locale-en.js"></script>
+    <script type="text/javascript">
+        $.jgrid.no_legacy_api = false;
+        $.jgrid.useJSON = true;
+    </script>
+    <script type="text/javascript" src="http://www.ok-soft-gmbh.com/jqGrid/jquery.jqGrid-4.1.2/js/jquery.jqGrid.min.js"></script>
+
+	<script>
+	$(function(){
+        var requestRemoteData = function(postdata) {
+	    	var grid = this;
+	        jQuery.ajax({
+	           url: private_URL + '?Action=GetViewColumnsAndGroups',
+	           data:postdata,
+	           dataType:"jsonp",
+	           success: function(data,stat){
+					if(stat=="success") {
+						window.datat = data.groups;
+						//grid.addJSONData(data.groups);
+					}
+	           }
+	        });
+	    }
+	    requestRemoteData()
+		jQuery("#treegrid").jqGrid({
+		    treeGrid: true,
+		    treeGridModel: 'adjacency',
+		    ExpandColumn : 'name',
+		    treedatatype: requestRemoteData,
+		    datatype: function(){},
+		    colNames:["id","Name","Description"],
+		    colModel:[
+		         {name:'id',index:'id', width:1,hidden:true,key:true},
+		         {name:'name',index:'name', width:180, align:'left',
+		          cellattr: function(rowId, tv, rawObject, cm, rdata){
+		         	return 'title="'+ rawObject.description + '"'
+		         }},
+		         {name:'description',index:'description', hidden:true, align:"left"}
+		    ],
+		    height:'100%',
+		    caption: "Groups",
+            jsonReader: {
+                repeatitems: false,
+                root: function (obj) { return obj; },
+                page: function (obj) { return 1; },
+                total: function (obj) { return 1; },
+                records: function (obj) { return obj.length; }
+            }
+		});
+	});
+	</script>
+
+
+</head>
+<body>
+	<div style="height:510px; overflow:auto; width:202px; display:inline-block;">
+	    <table id="treegrid"><tr><td/></tr></table>
+	</div>
+</body>
+</html>

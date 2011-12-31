@@ -12,10 +12,12 @@
 					id: value.rowId
 				},
 				gridview: true,
-				height: 'auto',
+				height: value.height,
 				hoverrows: false,
 				colModel: value.colModel,
-				cmTemplate: { align: "center" },
+				cmTemplate: { align: "center" }, //sets default property for the colModel 
+				width: value.width,
+				hiddengrid: value.hiddengrid, //sets the grid to be hidden initially
 				pager: value.pager,
 				//TODO Investigate virtual scrolling for groups
 				rowNum: value.rowNum,

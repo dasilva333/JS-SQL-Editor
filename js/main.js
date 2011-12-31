@@ -1,6 +1,6 @@
 (function() {
-  var ACT_DATA_URL, App, Column, Condition, Group, columnTypes, defaultColumns, emptyCondition, emptyGroup, operatorDefinitions, savedColumns,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var ACT_DATA_URL, App, Column, Condition, Group, columnTypes, defaultColumns, emptyCondition, emptyGroup, operatorDefinitions, savedColumns;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
 
@@ -435,10 +435,15 @@
 
   Group = (function() {
 
-    function Group(id, params) {
-      this.GroupID = id;
-      this.Name = params.Name;
-      this.Description = params.Description;
+    function Group(index, params) {
+      this.id = params.id;
+      this.description = params.description;
+      this.expanded = params.expanded;
+      this.isLeaf = params.isLeaf;
+      this.level = params.level;
+      this.loaded = params.loaded;
+      this.name = params.name;
+      this.parent = params.parent;
     }
 
     return Group;
@@ -446,9 +451,6 @@
   })();
 
   App = (function() {
-    var self;
-
-    self = App;
 
     function App() {
       this.validateParens = __bind(this.validateParens, this);
@@ -456,6 +458,7 @@
       this.validateSeperator = __bind(this.validateSeperator, this);
       this.selectCondition = __bind(this.selectCondition, this);
       this.selectGroup = __bind(this.selectGroup, this);
+      this.loadSubGroups = __bind(this.loadSubGroups, this);
       this.afterInsertRow = __bind(this.afterInsertRow, this);
       this.onCellSelect = __bind(this.onCellSelect, this);
       var id, params;
@@ -486,13 +489,24 @@
       this.selectedGroup = new Group(0, emptyGroup);
       this.groupsModel = [
         {
-          name: "GroupID",
-          width: 60
+          name: 'id',
+          index: 'id',
+          width: 1,
+          hidden: true,
+          key: true
         }, {
-          name: "Name"
+          name: 'name',
+          index: 'name',
+          width: 180,
+          align: 'left',
+          cellattr: function(rowId, tv, rawObject, cm, rdata) {
+            return 'title="' + rawObject.description + '"';
+          }
         }, {
-          name: "Description",
-          hidden: true
+          name: 'description',
+          index: 'description',
+          hidden: true,
+          align: "left"
         }
       ];
     }
@@ -526,6 +540,18 @@
         _this.selectedCondition = new Condition(emptyCondition);
         return ko.applyBindings(_this, $("#" + _this.selectedCondition.ID).parent().get(0));
       }, 250);
+    };
+
+    App.prototype.loadSubGroups = function(postdata) {
+      var _this = this;
+      return jQuery.ajax({
+        url: private_URL + '?Action=GetViewColumnsAndGroups',
+        data: postdata,
+        dataType: "jsonp",
+        success: function(data, stat) {
+          if (stat === "success") return _this.groups(data.groups);
+        }
+      });
     };
 
     App.prototype.selectGroup = function(ID) {
@@ -599,7 +625,8 @@
         statement = "SELECT * FROM Contacts WHERE " + (this.conditions().map(function(o) {
           return o.getStatement();
         })).join("");
-        return SQLParser.parse(statement);
+        SQLParser.parse(statement);
+        return [true, ""];
       } catch (error) {
         return [false, "Criteria is wrong: " + error.toString().split(":")[2]];
       }

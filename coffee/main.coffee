@@ -291,14 +291,18 @@ class Column
     
 class Group
   
-  constructor: (id,params) ->
-    @GroupID = id
-    @Name = params.Name
-    @Description = params.Description
-      
+  constructor: (index,params) ->
+    @id = params.id
+    @description = params.description
+    @expanded = params.expanded
+    @isLeaf = params.isLeaf
+    @level = params.level
+    @loaded = params.loaded
+    @name = params.name
+    @parent = params.parent
+    
 class App
   
-  self = @
   constructor: ->
     @conditions = ko.observableArray()
     @selectedCondition = new Condition(emptyCondition)
@@ -313,19 +317,10 @@ class App
     @groups = ko.observableArray(new Group id,params for id,params of allGroups)
     @selectedGroup = new Group(0,emptyGroup)
     @groupsModel = [
-      {
-        name: "GroupID",
-        width: 60
-      },
-      {
-        name: "Name"
-      },
-      {
-        name: "Description"
-        hidden: true
-      }
+       { name:'id', index:'id', width:1,hidden:true,key:true }
+       { name:'name',index:'name', width:180, align:'left', cellattr: (rowId, tv, rawObject, cm, rdata) -> 'title="'+ rawObject.description + '"' }
+       { name:'description',index:'description', hidden:true, align:"left" }
     ]
-    
     
   getConditions: ->
     @conditions
@@ -350,6 +345,16 @@ class App
         ko.applyBindings @, $("#" + @selectedCondition.ID).parent().get 0
     ,250)
   
+  loadSubGroups: (postdata) =>
+    jQuery.ajax(
+      url: private_URL + '?Action=GetViewColumnsAndGroups'
+      data:postdata
+      dataType:"jsonp"
+      success: (data,stat) =>
+        if stat is "success"
+          @groups data.groups
+    )
+
   selectGroup: (ID) =>
     $.ajax(
       url: ACT_DATA_URL
@@ -398,6 +403,7 @@ class App
     try
       statement = "SELECT * FROM Contacts WHERE " + ( @conditions().map (o) -> o.getStatement() ).join("")
       SQLParser.parse statement
+      [true, ""]
     catch error
       [false, "Criteria is wrong: " + error.toString().split(":")[2]]
  
