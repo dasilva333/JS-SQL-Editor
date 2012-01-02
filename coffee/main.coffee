@@ -196,7 +196,7 @@ class Condition
   getFormattedComparison: ->
     x = null
     if (@getDataType() is "CF_SQL_VARCHAR")
-      x = @comparison().singleQuoted()
+      x = @comparison().toString().singleQuoted()
     else if (@getDataType() is "CF_SQL_BIT")
       if @comparison() is "True"
         x = 1
@@ -270,8 +270,7 @@ class Condition
       ')': @[')']
       Seperator: @Seperator
       type: @getDataType()
-        
-window.Condition = Condition;
+
 
 class Column
 
@@ -309,7 +308,7 @@ class App
     @conditions = ko.observableArray()
     @selectedCondition = new Condition(emptyCondition)
     
-    @columns = ko.observableArray((new Column id,params,savedColumns.indexOf(id) for id,params of allColumns))
+    @columns = ko.observableArray((new Column id,params, $.inArray(id, savedColumns) for id,params of allColumns))
     sortByAlpha(@columns)
     
     @contactsModel = @columns()
@@ -349,12 +348,10 @@ class App
   
   loadSubGroups: (postdata) =>
     jQuery.ajax
-      url: private_URL + '?Action=GetViewColumnsAndGroups'
+      url: ACT_DATA_URL + '?Action=GetViewColumnsAndGroups'
       data:postdata
       dataType:"jsonp"
-      success: (data,stat) =>
-        console.log data
-        window.awesome = data;           
+      success: (data,stat) =>           
         if stat is "success"
           @groups data.groups
     

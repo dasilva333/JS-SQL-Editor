@@ -1,6 +1,6 @@
 (function() {
-  var ACT_DATA_URL, App, Column, Condition, Group, columnTypes, defaultColumns, emptyCondition, emptyGroup, operatorDefinitions, savedColumns;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var ACT_DATA_URL, App, Column, Condition, Group, columnTypes, defaultColumns, emptyCondition, emptyGroup, operatorDefinitions, savedColumns,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
 
@@ -305,7 +305,7 @@
       var x;
       x = null;
       if (this.getDataType() === "CF_SQL_VARCHAR") {
-        x = this.comparison().singleQuoted();
+        x = this.comparison().toString().singleQuoted();
       } else if (this.getDataType() === "CF_SQL_BIT") {
         if (this.comparison() === "True") {
           x = 1;
@@ -407,8 +407,6 @@
 
   })();
 
-  window.Condition = Condition;
-
   Column = (function() {
 
     function Column(id, params, index) {
@@ -469,7 +467,7 @@
         _results = [];
         for (id in allColumns) {
           params = allColumns[id];
-          _results.push(new Column(id, params, savedColumns.indexOf(id)));
+          _results.push(new Column(id, params, $.inArray(id, savedColumns)));
         }
         return _results;
       })());
@@ -545,12 +543,10 @@
     App.prototype.loadSubGroups = function(postdata) {
       var _this = this;
       return jQuery.ajax({
-        url: private_URL + '?Action=GetViewColumnsAndGroups',
+        url: ACT_DATA_URL + '?Action=GetViewColumnsAndGroups',
         data: postdata,
         dataType: "jsonp",
         success: function(data, stat) {
-          console.log(data);
-          window.awesome = data;
           if (stat === "success") return _this.groups(data.groups);
         }
       });

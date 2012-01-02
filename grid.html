@@ -40,7 +40,7 @@
 		<table border="0" cellpadding="0" cellspacing="0" width="100%">        
         	<tr>        
         		<td valign="top">
-					<div style="height:465px; overflow:auto; width:202px; display:inline-block;">
+					<div style="height:465px; overflow:auto; width:210px; display:inline-block;">
 					    <table id="groupsGrid" data-bind="treegrid: { 
 								data: groups,
 								selectItem: selectGroup,
@@ -55,111 +55,119 @@
 					</div>
 				</td>
 				<td valign="top">
-					<table id="conditionsGrid" data-bind="grid: { 
-						data: conditions,
-						selectItem: selectCondition,
-						selectedItem: selectedCondition,
-						onCellSelect: onCellSelect,
-						afterInsertRow: afterInsertRow,
-						caption: 'Criteria Builder',
-						editor: true,
-						rowNum: 10,
-						height: 'auto',
-						width: 950,
-						hiddengrid: true,
-						pager: '#conditionPager',
-						colModel: [
-							{ name: 'ID', index: 'ID', width: 15, sortable: true },
-							{ name: '(', index: '(', width: 30, editable: true, edittype:'select',
-									editoptions:{
-										value:':;(:(;((:((;(((:(((', 
-										dataEvents: [ { type: 'click', fn: function(e) { selectedCondition.setStartParen(e.target.value); } } ] 
-									}, 
-									editrules: {
-										custom: true,
-										custom_func: validateParens
-									}
-							},
-							{ 
-								name: 'Column', index: 'Column', width: 200, editable: true, edittype: 'select', 
-								editoptions: { 
-									value: getGridColumns(), 
-									dataEvents: [
-										{ type: 'click', fn: function(e) { selectedCondition.setColumnName(e.target.value); } }
-									] 
-								},
-								editrules: {
-									required: true
-								}
-							},
-							{ 
-								name: 'Operator', index: 'Operator', width: 150, editable: true, edittype: 'custom', 
-								editoptions: { 
-									custom_element: selectedCondition.operatorTemplate, 
-									custom_value: selectedCondition.getOperator
-								},
-								editrules: {
-									required: true
-								}  
-							},
-							{ name: 'Comparison', index: 'Comparison', width: 200, editable: true, edittype: 'custom', datefmt: 'mm/dd/yyyy',
-								editoptions: { 
-									custom_element: selectedCondition.comparisonTemplate, 
-									custom_value: selectedCondition.getComparison
-								}
-							},
-							{ name: ')', index: ')', width: 30, editable: true, edittype:'select',
-									editoptions:{
-										value:':;):);)):));))):)))', 
-										dataEvents: [ { type: 'click', fn: function(e) { selectedCondition.setEndParen(e.target.value); } } ] 
-									}, 
-									editrules: {
-										custom: true,
-										custom_func: validateParens
-									}
-							},
-							{ name: 'Seperator', index: 'Seperator', width: 60, editable: true, edittype:'select',
-									editoptions:{
-										value:':;OR:OR;AND:AND', 
-										dataEvents: [ { type: 'click', fn: function(e) { selectedCondition.setSeperator(e.target.value); } } ] 
-									}, 
-									editrules: {
-										custom: true,
-										custom_func: validateSeperator
-									}
-							},
-							{ name: 'Statement', index: 'Statement', width: 400, editable: true, edittype: 'custom', 
-								editoptions: { 
-									custom_element: selectedCondition.statementTemplate, 
-									custom_value: selectedCondition.getStatement
-								}, 
-								editrules: {
-									custom: true,
-									custom_func: validateStatement
-								}   
-							}
-						],
-						rowId: 'ID'
-			        }">
-			    	</table>
-					<div id="conditionPager"></div>
-					
-					<br />
-					
-			   		<table id="contactsGrid" data-bind="grid: { 
-						data: contacts,
-						caption: 'Contacts Result',
-						rowId: 'ID',
-						colModel: contactsModel,
-						editor: false,
-						pager: '#contactsPager',
-						width: 950,
-						height: 'auto',
-						rowNum: 5
-			        }">
-			    	</table> 
-			    	<div id="contactsPager"></div>					
-					
+					<table border="0" cellpadding="2" cellspacing="0" width="100%">                    
+                    	<tr>      
+                    		<td>              
+								<table id="conditionsGrid" data-bind="grid: { 
+									data: conditions,
+									selectItem: selectCondition,
+									selectedItem: selectedCondition,
+									onCellSelect: onCellSelect,
+									afterInsertRow: afterInsertRow,
+									caption: 'Criteria Builder',
+									editor: true,
+									rowNum: 10,
+									height: 'auto',
+									width: 950,
+									hiddengrid: true,
+									pager: '#conditionPager',
+									colModel: [
+										{ name: 'ID', index: 'ID', width: 15, sortable: true },
+										{ name: '(', index: '(', width: 30, editable: true, edittype:'select',
+												editoptions:{
+													value:':;(:(;((:((;(((:(((', 
+													dataEvents: [ { type: 'click', fn: function(e) { selectedCondition.setStartParen(e.target.value); } } ] 
+												}, 
+												editrules: {
+													custom: true,
+													custom_func: validateParens
+												}
+										},
+										{ 
+											name: 'Column', index: 'Column', width: 200, editable: true, edittype: 'select', 
+											editoptions: { 
+												value: getGridColumns(), 
+												dataEvents: [
+													{ type: 'click', fn: function(e) { selectedCondition.setColumnName(e.target.value); } }
+												] 
+											},
+											editrules: {
+												required: true
+											}
+										},
+										{ 
+											name: 'Operator', index: 'Operator', width: 150, editable: true, edittype: 'custom', 
+											editoptions: { 
+												custom_element: selectedCondition.operatorTemplate, 
+												custom_value: selectedCondition.getOperator
+											},
+											editrules: {
+												required: true
+											}  
+										},
+										{ name: 'Comparison', index: 'Comparison', width: 200, editable: true, edittype: 'custom', datefmt: 'mm/dd/yyyy',
+											editoptions: { 
+												custom_element: selectedCondition.comparisonTemplate, 
+												custom_value: selectedCondition.getComparison
+											}
+										},
+										{ name: ')', index: ')', width: 30, editable: true, edittype:'select',
+												editoptions:{
+													value:':;):);)):));))):)))', 
+													dataEvents: [ { type: 'click', fn: function(e) { selectedCondition.setEndParen(e.target.value); } } ] 
+												}, 
+												editrules: {
+													custom: true,
+													custom_func: validateParens
+												}
+										},
+										{ name: 'Seperator', index: 'Seperator', width: 60, editable: true, edittype:'select',
+												editoptions:{
+													value:':;OR:OR;AND:AND', 
+													dataEvents: [ { type: 'click', fn: function(e) { selectedCondition.setSeperator(e.target.value); } } ] 
+												}, 
+												editrules: {
+													custom: true,
+													custom_func: validateSeperator
+												}
+										},
+										{ name: 'Statement', index: 'Statement', width: 400, editable: true, edittype: 'custom', 
+											editoptions: { 
+												custom_element: selectedCondition.statementTemplate, 
+												custom_value: selectedCondition.getStatement
+											}, 
+											editrules: {
+												custom: true,
+												custom_func: validateStatement
+											}   
+										}
+									],
+									rowId: 'ID'
+						        }">
+						    	</table>
+								<div id="conditionPager"></div>
+								                    		
+								
+                    		</td>                    
+                    	</tr> 
+                    	<tr>                    
+                    		<td>
+			                   <table id="contactsGrid" data-bind="grid: { 
+									data: contacts,
+									caption: 'Contacts Result',
+									rowId: 'ID',
+									colModel: contactsModel,
+									editor: false,
+									pager: '#contactsPager',
+									width: 950,
+									height: 'auto',
+									rowNum: 5
+						        }">
+						    	</table> 
+						    	<div id="contactsPager"></div>	 		
+                    		</td>                    
+                    	</tr>                
+                    </table> 
 				</td>        
         	</tr>        
         </table>	
