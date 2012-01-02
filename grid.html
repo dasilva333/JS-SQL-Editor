@@ -3,7 +3,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>SQL Editor</title>
-	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.1/themes/redmond/jquery-ui.css" type="text/css" rel="Stylesheet" />
+	<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.1/themes/cupertino/jquery-ui.css" type="text/css" rel="Stylesheet" />
 	<link rel="stylesheet" type="text/css" media="screen" href="themes/ui.jqgrid.css" />
 	<link rel="stylesheet" type="text/css" media="screen" href="themes/ui.multiselect.css" />
 	<link rel="stylesheet" type="text/css" media="screen" href="themes/grid_styles.css" />
@@ -33,7 +33,9 @@
 	
 </head>
 <body>
-	
+	<div class="ui-widget-overlay" id="loadingOverlay" style="display:none;">
+		<img border="0" src="images/ajax-loader.gif">
+	</div>
 	<div id="container">
 		<table border="0" cellpadding="0" cellspacing="0" width="100%">        
         	<tr>        

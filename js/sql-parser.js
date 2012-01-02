@@ -151,7 +151,7 @@
 
     SQL_KEYWORDS = ['SELECT', 'FROM', 'WHERE', 'GROUP BY', 'ORDER BY', 'HAVING', 'AS'];
 
-    SQL_FUNCTIONS = ['AVG', 'COUNT', 'MIN', 'MAX', 'SUM'];
+    SQL_FUNCTIONS = ['AVG', 'COUNT', 'MIN', 'MAX', 'SUM', "DATEADD"];
 
     SQL_SORT_ORDERS = ['ASC', 'DESC'];
 
@@ -177,6 +177,8 @@
 
     STRING = /^'([^\\']*(?:\\.[^\\']*)*)'/;
 
+    VARIABLES = /^@([^\\ ]*(?:\\.[^\\ ]*)*)\ /;
+    
     DBLSTRING = /^"([^\\"]*(?:\\.[^\\"]*)*)"/;
 
     return Lexer;

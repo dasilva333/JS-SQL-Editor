@@ -332,8 +332,7 @@
     Condition.prototype.getPresetComparison = function() {
       if (this.getDataType() === "CF_SQL_BIT") {
         this.setComparison(this.presetComparison());
-      }
-      if (this.getDataType() === "CF_SQL_TIMESTAMP" && this.presetComparison() !== "") {
+      } else if (this.getDataType() === "CF_SQL_TIMESTAMP" && this.presetComparison() !== "") {
         this.setComparison(this.presetComparison());
       }
       return this.presetComparison;
@@ -408,7 +407,7 @@
 
   })();
 
-  Condition = Condition;
+  window.Condition = Condition;
 
   Column = (function() {
 
@@ -462,6 +461,7 @@
       this.afterInsertRow = __bind(this.afterInsertRow, this);
       this.onCellSelect = __bind(this.onCellSelect, this);
       var id, params;
+      this.loadingOverlay = $("#loadingOverlay, #container");
       this.conditions = ko.observableArray();
       this.selectedCondition = new Condition(emptyCondition);
       this.columns = ko.observableArray((function() {
@@ -549,6 +549,8 @@
         data: postdata,
         dataType: "jsonp",
         success: function(data, stat) {
+          console.log(data);
+          window.awesome = data;
           if (stat === "success") return _this.groups(data.groups);
         }
       });
@@ -588,6 +590,7 @@
     App.prototype.previewRecords = function() {
       var _this = this;
       if (this.conditions().length > 0) {
+        this.loadingOverlay.toggle();
         return $.ajax({
           url: ACT_DATA_URL,
           data: {
@@ -598,14 +601,13 @@
           dataType: 'jsonp',
           jsonp: 'callback',
           success: function(data) {
-            var contact, _i, _len, _results;
+            var contact, _i, _len;
             _this.contacts.removeAll();
-            _results = [];
             for (_i = 0, _len = data.length; _i < _len; _i++) {
               contact = data[_i];
-              _results.push(_this.contacts.push(contact));
+              _this.contacts.push(contact);
             }
-            return _results;
+            return _this.loadingOverlay.toggle();
           }
         });
       }
@@ -620,12 +622,10 @@
     };
 
     App.prototype.validateStatement = function() {
-      var statement;
       try {
-        statement = "SELECT * FROM Contacts WHERE " + (this.conditions().map(function(o) {
+        SQLParser.parse("SELECT * FROM Contacts WHERE " + (this.conditions().map(function(o) {
           return o.getStatement();
-        })).join("");
-        SQLParser.parse(statement);
+        })).join(""));
         return [true, ""];
       } catch (error) {
         return [false, "Criteria is wrong: " + error.toString().split(":")[2]];

@@ -15,3 +15,12 @@ html, body {
 .ui-layout-west .ui-jqgrid tr.jqgrow td { border-bottom: 0px none;}
 .ui-datepicker {z-index:1200;}
 span.ui-state-error { padding:2px; }
+#loadingOverlay {
+    margin: 0;
+    padding: 0;
+}
+#loadingOverlay img {
+    left: 50%;
+    position: relative;
+    top: 50%;
+}

@@ -187,7 +187,7 @@ class Condition
       number: (@getDataType() is "CF_SQL_INTEGER")
       date: (@getDataType() is "CF_SQL_TIMESTAMP")
     }
-    if(operation is 'get')
+    if operation is 'get'
       $(elem).filter("input").val()
     else
       @Comparison = @comparison()
@@ -209,15 +209,15 @@ class Condition
     return x
     
   getComparisons: ->
-    if (@getDataType() of columnTypes && @getOperator()() of columnTypes[ @getDataType() ] )
+    if @getDataType() of columnTypes && @getOperator()() of columnTypes[ @getDataType() ]
       comps = columnTypes[ @getDataType() ][ @getOperator()() ]
     else
       comps = []
       
   getPresetComparison: ->
-    if (@getDataType() is "CF_SQL_BIT")
+    if @getDataType() is "CF_SQL_BIT"
       @setComparison @presetComparison()
-    if (@getDataType() is "CF_SQL_TIMESTAMP" and @presetComparison() isnt "")
+    else if @getDataType() is "CF_SQL_TIMESTAMP" and @presetComparison() isnt ""
       @setComparison @presetComparison() ##Once I figure out the parser bug I'll set it to @Today
     @presetComparison
   
@@ -271,7 +271,7 @@ class Condition
       Seperator: @Seperator
       type: @getDataType()
         
-Condition = Condition;
+window.Condition = Condition;
 
 class Column
 
@@ -304,6 +304,8 @@ class Group
 class App
   
   constructor: ->
+    @loadingOverlay = $("#loadingOverlay, #container")
+    
     @conditions = ko.observableArray()
     @selectedCondition = new Condition(emptyCondition)
     
@@ -337,7 +339,7 @@ class App
         ko.applyBindings @, $("#" + @selectedCondition.ID).parent().get 0
       ,250)
     else
-      false;  
+      false
   
   afterInsertRow: =>
     setTimeout( =>
@@ -346,17 +348,19 @@ class App
     ,250)
   
   loadSubGroups: (postdata) =>
-    jQuery.ajax(
+    jQuery.ajax
       url: private_URL + '?Action=GetViewColumnsAndGroups'
       data:postdata
       dataType:"jsonp"
       success: (data,stat) =>
+        console.log data
+        window.awesome = data;           
         if stat is "success"
           @groups data.groups
-    )
+    
 
   selectGroup: (ID) =>
-    $.ajax(
+    $.ajax
       url: ACT_DATA_URL
       data:
         action: "GetGroupById"
@@ -364,22 +368,23 @@ class App
       type: 'GET'
       dataType: 'jsonp'
       jsonp: 'callback',
-      success: (data) =>
+      success: (data) =>      
         @conditions.removeAll()
         for condition in data
           @conditions.push(new Condition(condition))
         @previewRecords()  
-    )
+    
     
   selectCondition: (selectedItem) =>
-    if (selectedItem.ID isnt "new_row")
+    if selectedItem.ID isnt "new_row"
       @selectedCondition = selectedItem 
       ko.mapping.fromJS(selectedItem, @selectedCondition)
     true
     
   previewRecords: ->
-    if (@conditions().length > 0)
-      $.ajax(
+    if @conditions().length > 0
+      @loadingOverlay.toggle()
+      $.ajax
         url: ACT_DATA_URL
         data:
           action: "GetContactsByQuery"
@@ -390,8 +395,9 @@ class App
         success: (data) =>
           @contacts.removeAll()
           for contact in data
-            @contacts.push(contact)
-      )
+            @contacts.push contact
+          @loadingOverlay.toggle()  
+      
     
   validateSeperator: =>
     if (@getConditions()()[@getConditions()().length - 1] isnt @selectedCondition and @selectedCondition.Seperator is "")
@@ -401,8 +407,7 @@ class App
     
   validateStatement: =>
     try
-      statement = "SELECT * FROM Contacts WHERE " + ( @conditions().map (o) -> o.getStatement() ).join("")
-      SQLParser.parse statement
+      SQLParser.parse "SELECT * FROM Contacts WHERE " + ( @conditions().map (o) -> o.getStatement() ).join("")
       [true, ""]
     catch error
       [false, "Criteria is wrong: " + error.toString().split(":")[2]]
@@ -417,7 +422,7 @@ class App
       [true, ""]     
 
 $ ->
-  $.ajax(
+  $.ajax
     url: ACT_DATA_URL
     data:
       action: "GetViewColumnsAndGroups"
@@ -429,5 +434,5 @@ $ ->
       window['allGroups'] = data.groups 
       window["Main"] = new App()
       ko.applyBindings Main
-  )
+  
   
