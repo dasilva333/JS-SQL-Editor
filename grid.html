@@ -39,6 +39,7 @@
 	<div id="container">
 		<table border="0" cellpadding="0" cellspacing="0" width="100%">        
         	<tr>        
+        		<td valign="top">
 					<div>
 					    <table id="groupsGrid" data-bind="treegrid: { 
 								data: groups,
@@ -162,7 +163,7 @@
 									editor: false,
 									pager: '#contactsPager',
 									width: 950,
-									height: 'auto',
+									height: $(window).height() - 150,
 									rowNum: 5
 						        }">
 						    	</table> 

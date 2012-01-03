@@ -118,6 +118,9 @@
 							}); 
 				 		} 
 					})
+					$(window).resize(function(){
+						$(element).jqGrid("setGridHeight", $(window).height() - 150 )
+					})
 				} 
 			} 
 		},
