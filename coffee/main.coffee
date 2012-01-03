@@ -2,7 +2,7 @@ window.defaultCaption = "--Select--"
 window.COLUMN_KEY_NAMES = "defaultColumns"
 window.allColumns = []
 window.allGroups = []
-ACT_DATA_URL = if (typeof private_URL != "undefined") then private_URL else "/act/ACT_Schema.cfm"  
+window.ACT_DATA_URL = if (typeof private_URL != "undefined") then private_URL else "/act/ACT_Schema.cfm"  
     
 defaultColumns = ["93","3","5"] ##ACT_ID, FirstName, LastName  
 savedColumns = $.jStorage.get(COLUMN_KEY_NAMES, defaultColumns)
@@ -319,7 +319,7 @@ class App
     @selectedGroup = new Group(0,emptyGroup)
     @groupsModel = [
        { name:'id', index:'id', width:1,hidden:true,key:true }
-       { name:'name',index:'name',editable:true, width:180, align:'left', cellattr: (rowId, tv, rawObject, cm, rdata) -> 'title="'+ rawObject.description + '"' }
+       { name:'name',index:'name',editable:true, width:200, align:'left', cellattr: (rowId, tv, rawObject, cm, rdata) -> 'title="'+ rawObject.description + '"' }
        { name:'description',index:'description',editable:true, hidden:true, align:"left" }
     ]
     
@@ -417,7 +417,15 @@ class App
       [false, "Parenthesis aren't both set"]
     else
       [true, ""]     
-
+  
+  contactsGridHeight: ->
+    height = $(window).height() - $('#gbox_conditionsGrid').height() - 107
+    $("#contactsGrid").jqGrid("setGridHeight", height ) 
+    height
+  
+  conditionsGridHeight: ->
+    'auto'
+  
 $ ->
   $.ajax
     url: ACT_DATA_URL

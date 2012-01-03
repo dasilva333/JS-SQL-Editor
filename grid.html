@@ -50,7 +50,8 @@
 								pager: '#groupsPager',
 								colModel: groupsModel,
 								ExpandTreeFunc: loadSubGroups,
-								colNames: ['id','Name','Description']
+								colNames: ['id','Name','Description'],
+								editurl: ACT_DATA_URL
 							}">
 						</table> 
 						<div id="groupsPager"></div>
@@ -70,7 +71,8 @@
 									caption: 'Criteria Builder',
 									editor: true,
 									rowNum: 10,
-									height: 'auto',
+									height: conditionsGridHeight,
+									resizeHeight: contactsGridHeight,
 									width: 950,
 									hiddengrid: true,
 									pager: '#conditionPager',
@@ -163,7 +165,7 @@
 									editor: false,
 									pager: '#contactsPager',
 									width: 950,
-									height: $(window).height() - 150,
+									height: contactsGridHeight,
 									rowNum: 5
 						        }">
 						    	</table> 

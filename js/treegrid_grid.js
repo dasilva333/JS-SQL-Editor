@@ -12,6 +12,7 @@
 			    colNames: value.colNames,
 			    colModel: value.colModel,
 			    height: $(window).height() - 100,
+			    editurl: value.editurl,
 			    caption: value.caption,
 			    pager : value.pager,
 			    onCellSelect: value.onCellSelect,
@@ -23,7 +24,7 @@
 	                records: function (obj) { return obj.length; }
 	            }
 			})
-			.jqGrid('navGrid', value.pager)
+			.jqGrid('navGrid', value.pager, {edit:true,add:true,del:true,search:false,nav:false,refresh:false} )
 			/*adding the column then removing it again allows editing of description while not seeing it as a column, fix it
 			 * .jqGrid('navButtonAdd', value.pager, { 
 				caption: "Columns", 

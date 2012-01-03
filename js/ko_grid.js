@@ -12,7 +12,8 @@
 					id: value.rowId
 				},
 				gridview: true,
-				height: value.height,
+				height: value.height(),
+				onHeaderClick: value.resizeHeight,
 				hoverrows: false,
 				colModel: value.colModel,
 				cmTemplate: { align: "center" }, //sets default property for the colModel 
@@ -98,7 +99,6 @@
 					   position:"last"
 					})
 				}
-					
 				else {	
 					$(element).jqGrid('navButtonAdd', value.pager, { 
 						caption: "Columns", 
@@ -118,10 +118,9 @@
 							}); 
 				 		} 
 					})
-					$(window).resize(function(){
-						$(element).jqGrid("setGridHeight", $(window).height() - 150 )
-					})
 				} 
+				if (value.resizeHeight)
+					$(window).resize(value.resizeHeight)
 			} 
 		},
 		update: function (element, valueAccessor) {

@@ -1,6 +1,6 @@
 (function() {
-  var ACT_DATA_URL, App, Column, Condition, Group, columnTypes, defaultColumns, emptyCondition, emptyGroup, operatorDefinitions, savedColumns;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var App, Column, Condition, Group, columnTypes, defaultColumns, emptyCondition, emptyGroup, operatorDefinitions, savedColumns,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
 
@@ -10,7 +10,7 @@
 
   window.allGroups = [];
 
-  ACT_DATA_URL = typeof private_URL !== "undefined" ? private_URL : "/act/ACT_Schema.cfm";
+  window.ACT_DATA_URL = typeof private_URL !== "undefined" ? private_URL : "/act/ACT_Schema.cfm";
 
   defaultColumns = ["93", "3", "5"];
 
@@ -496,7 +496,7 @@
           name: 'name',
           index: 'name',
           editable: true,
-          width: 180,
+          width: 200,
           align: 'left',
           cellattr: function(rowId, tv, rawObject, cm, rdata) {
             return 'title="' + rawObject.description + '"';
@@ -640,6 +640,17 @@
       } else {
         return [true, ""];
       }
+    };
+
+    App.prototype.contactsGridHeight = function() {
+      var height;
+      height = $(window).height() - $('#gbox_conditionsGrid').height() - 107;
+      $("#contactsGrid").jqGrid("setGridHeight", height);
+      return height;
+    };
+
+    App.prototype.conditionsGridHeight = function() {
+      return 'auto';
     };
 
     return App;
