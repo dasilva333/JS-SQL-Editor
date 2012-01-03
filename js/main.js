@@ -1,6 +1,6 @@
 (function() {
-  var ACT_DATA_URL, App, Column, Condition, Group, columnTypes, defaultColumns, emptyCondition, emptyGroup, operatorDefinitions, savedColumns,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var ACT_DATA_URL, App, Column, Condition, Group, columnTypes, defaultColumns, emptyCondition, emptyGroup, operatorDefinitions, savedColumns;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
 
