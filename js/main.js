@@ -495,6 +495,7 @@
         }, {
           name: 'name',
           index: 'name',
+          editable: true,
           width: 180,
           align: 'left',
           cellattr: function(rowId, tv, rawObject, cm, rdata) {
@@ -503,6 +504,7 @@
         }, {
           name: 'description',
           index: 'description',
+          editable: true,
           hidden: true,
           align: "left"
         }

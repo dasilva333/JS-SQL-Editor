@@ -11,8 +11,9 @@
 			    datatype: function(){},
 			    colNames: value.colNames,
 			    colModel: value.colModel,
-			    height:'100%',
+			    height: $(window).height() - 100,
 			    caption: value.caption,
+			    pager : value.pager,
 			    onCellSelect: value.onCellSelect,
 	            jsonReader: {
 	                repeatitems: false,
@@ -21,7 +22,30 @@
 	                total: function (obj) { return 1; },
 	                records: function (obj) { return obj.length; }
 	            }
-			});
+			})
+			.jqGrid('navGrid', value.pager)
+			/*adding the column then removing it again allows editing of description while not seeing it as a column, fix it
+			 * .jqGrid('navButtonAdd', value.pager, { 
+				caption: "Columns", 
+				title: "Reorder Columns", 
+				onClickButton : function (){ 
+					jQuery(element).jqGrid('columnChooser', {
+						done : function (perm) {   
+							if (perm) {
+								var defaultColumns = []
+								this.jqGrid("getGridParam","colModel").map(function(col){
+									if (!col.hidden)
+										defaultColumns.push(col.id);
+								})
+								$.jStorage.set(COLUMN_KEY_NAMES, defaultColumns);
+							}
+						}
+					}); 
+		 		} 
+			})*/
+			$(window).resize(function(){
+				$(element).jqGrid("setGridHeight", $(window).height() - 100 )
+			})
 		},
 		update: function (element, valueAccessor) {
 			var value = valueAccessor();
@@ -29,3 +53,14 @@
 			element.addJSONData(newData);
 		}
 	};
+	
+	/**
+	
+	grid = $("#groupsGrid")
+
+	parentid = 6; //Sold
+
+	parent = grid.jqGrid('getRowData', parentid);
+
+	grid.jqGrid('reloadNode', parent);
+	 */

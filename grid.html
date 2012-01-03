@@ -39,20 +39,22 @@
 	<div id="container">
 		<table border="0" cellpadding="0" cellspacing="0" width="100%">        
         	<tr>        
-        		<td valign="top">
-					<div style="height:465px; overflow:auto; width:210px; display:inline-block;">
+					<div>
 					    <table id="groupsGrid" data-bind="treegrid: { 
 								data: groups,
 								selectItem: selectGroup,
 								selectedItem: selectedGroup,
 								onCellSelect: selectGroup,
 								caption: 'Groups',
+								pager: '#groupsPager',
 								colModel: groupsModel,
 								ExpandTreeFunc: loadSubGroups,
 								colNames: ['id','Name','Description']
 							}">
 						</table> 
-					</div>
+						<div id="groupsPager"></div>
+					</div> 
+					
 				</td>
 				<td valign="top">
 					<table border="0" cellpadding="2" cellspacing="0" width="100%">                    

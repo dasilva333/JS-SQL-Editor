@@ -319,8 +319,8 @@ class App
     @selectedGroup = new Group(0,emptyGroup)
     @groupsModel = [
        { name:'id', index:'id', width:1,hidden:true,key:true }
-       { name:'name',index:'name', width:180, align:'left', cellattr: (rowId, tv, rawObject, cm, rdata) -> 'title="'+ rawObject.description + '"' }
-       { name:'description',index:'description', hidden:true, align:"left" }
+       { name:'name',index:'name',editable:true, width:180, align:'left', cellattr: (rowId, tv, rawObject, cm, rdata) -> 'title="'+ rawObject.description + '"' }
+       { name:'description',index:'description',editable:true, hidden:true, align:"left" }
     ]
     
   getConditions: ->
