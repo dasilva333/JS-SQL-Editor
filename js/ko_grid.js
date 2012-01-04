@@ -81,11 +81,11 @@
 						   aftersavefunc: function(){
 							   //var newItem = value.selectedItem; //this one should def work
 							   //var newItem = $(element).jqGrid('getLocalRow', "new_row"); //this one only gets the basic values
-							   //var newItem = Main.selectedCondition; //fix this so it doesn't reference Main directly
+							   var newItem = Main.selectedCondition; //fix this so it doesn't reference Main directly
 							  //newItem.ID = dataArr.length + 1; 
-							   value.data.unshift(Main.selectedCondition);
+							   value.data.unshift(newItem);
 							   lastsel = null;
-							   Main.selectedCondition = null;
+							   Main.selectedCondition = window.emptyCondition;
 						   }
 					   }
 					})

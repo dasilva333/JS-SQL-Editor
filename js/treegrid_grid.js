@@ -45,7 +45,7 @@
 		 		} 
 			})*/
 			$(window).resize(function(){
-				$(element).jqGrid("setGridHeight", $(window).height() - 100 )
+				$(element).jqGrid("setGridHeight", $(window).height() - 75 )
 			})
 		},
 		update: function (element, valueAccessor) {

@@ -83,7 +83,7 @@ operatorDefinitions =
     "Greater Than or Equal To": -> " => " + @getComparison()()
     "Less Than or Equal To": -> " =< " + @getComparison()()
 
-emptyCondition = {
+window.emptyCondition = {
   "ID": "new_row"
   "(": ""
   "Column": ""
@@ -337,7 +337,7 @@ class App
   onCellSelect: => 
     if (@selectedCondition.ID isnt "new_row")
       setTimeout( =>
-        ko.applyBindings @, $("#" + @selectedCondition.ID).parent().get 0
+        ko.applyBindings @, $("#" + @selectedCondition.ID, "#conditionsGrid").parent().get 0
       ,250)
     else
       false
@@ -345,7 +345,7 @@ class App
   afterInsertRow: =>
     setTimeout( =>
         @selectedCondition = new Condition emptyCondition
-        ko.applyBindings @, $("#" + @selectedCondition.ID).parent().get 0
+        ko.applyBindings @, $("#" + @selectedCondition.ID, "#conditionsGrid").parent().get 0
     ,250)
   
   loadSubGroups: (postdata) =>
@@ -393,7 +393,7 @@ class App
       jsonp: 'callback',
       success: (data) =>
         for condition,index in @conditions()
-          @conditions.id = data.ConditionIDs[index]
+          condition.ID = data.ConditionIDs[index]
         @previewRecords()
           
   previewRecords: ->

@@ -1,6 +1,6 @@
 (function() {
-  var App, Column, Condition, Group, columnTypes, defaultColumns, emptyCondition, emptyGroup, operatorDefinitions, savedColumns,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var App, Column, Condition, Group, columnTypes, defaultColumns, emptyGroup, operatorDefinitions, savedColumns;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
 
@@ -153,7 +153,7 @@
     }
   };
 
-  emptyCondition = {
+  window.emptyCondition = {
     "ID": "new_row",
     "(": "",
     "Column": "",
@@ -529,7 +529,7 @@
       var _this = this;
       if (this.selectedCondition.ID !== "new_row") {
         return setTimeout(function() {
-          return ko.applyBindings(_this, $("#" + _this.selectedCondition.ID).parent().get(0));
+          return ko.applyBindings(_this, $("#" + _this.selectedCondition.ID, "#conditionsGrid").parent().get(0));
         }, 250);
       } else {
         return false;
@@ -540,7 +540,7 @@
       var _this = this;
       return setTimeout(function() {
         _this.selectedCondition = new Condition(emptyCondition);
-        return ko.applyBindings(_this, $("#" + _this.selectedCondition.ID).parent().get(0));
+        return ko.applyBindings(_this, $("#" + _this.selectedCondition.ID, "#conditionsGrid").parent().get(0));
       }, 250);
     };
 
@@ -605,7 +605,7 @@
           _ref = _this.conditions();
           for (index = 0, _len = _ref.length; index < _len; index++) {
             condition = _ref[index];
-            _this.conditions.id = data.ConditionIDs[index];
+            condition.ID = data.ConditionIDs[index];
           }
           return _this.previewRecords();
         }
