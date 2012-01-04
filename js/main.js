@@ -161,7 +161,8 @@
     "Comparison": "",
     ")": "",
     "Seperator": "",
-    "Statement": ""
+    "Statement": "",
+    "Priority": "1"
   };
 
   emptyGroup = {
@@ -197,6 +198,7 @@
       this.seperator = ko.observable(params['Seperator'] || "");
       this.Seperator = params['Seperator'] || "";
       this.Statement = this.getStatement();
+      this.Priority = params['Priority'];
     }
 
     Condition.prototype.setStartParen = function(parens) {
@@ -556,6 +558,7 @@
 
     App.prototype.selectGroup = function(ID) {
       var _this = this;
+      this.selectedGroup = ID;
       return $.ajax({
         url: ACT_DATA_URL,
         data: {
@@ -585,6 +588,30 @@
       return true;
     };
 
+    App.prototype.saveCondition = function() {
+      var _this = this;
+      return $.ajax({
+        url: ACT_DATA_URL,
+        data: {
+          action: "SaveCondition",
+          groupid: this.selectedGroup,
+          where: "[" + this.conditions().join(",") + "]"
+        },
+        type: 'GET',
+        dataType: 'jsonp',
+        jsonp: 'callback',
+        success: function(data) {
+          var condition, index, _len, _ref;
+          _ref = _this.conditions();
+          for (index = 0, _len = _ref.length; index < _len; index++) {
+            condition = _ref[index];
+            _this.conditions.id = data.ConditionIDs[index];
+          }
+          return _this.previewRecords();
+        }
+      });
+    };
+
     App.prototype.previewRecords = function() {
       var _this = this;
       if (this.conditions().length > 0) {
@@ -612,7 +639,7 @@
     };
 
     App.prototype.validateSeperator = function() {
-      if (this.getConditions()()[this.getConditions()().length - 1] !== this.selectedCondition && this.selectedCondition.Seperator === "") {
+      if (this.getConditions()().length > 0 && this.getConditions()()[this.getConditions()().length - 1] !== this.selectedCondition && this.selectedCondition.Seperator === "") {
         return [false, "You must use a seperator for your criteria, AND/OR"];
       } else {
         return [true, ""];
@@ -621,9 +648,11 @@
 
     App.prototype.validateStatement = function() {
       try {
-        SQLParser.parse("SELECT * FROM Contacts WHERE " + (this.conditions().map(function(o) {
-          return o.getStatement();
-        })).join(""));
+        if (this.conditions().length > 0) {
+          SQLParser.parse("SELECT * FROM Contacts WHERE " + (this.conditions().map(function(o) {
+            return o.getStatement();
+          })).join(""));
+        }
         return [true, ""];
       } catch (error) {
         return [false, "Criteria is wrong: " + error.toString().split(":")[2]];
@@ -644,7 +673,7 @@
 
     App.prototype.contactsGridHeight = function() {
       var height;
-      height = $(window).height() - $('#gbox_conditionsGrid').height() - 107;
+      height = $(window).height() - $('#gbox_conditionsGrid').height() - 105;
       $("#contactsGrid").jqGrid("setGridHeight", height);
       return height;
     };

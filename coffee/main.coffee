@@ -91,7 +91,8 @@ emptyCondition = {
   "Comparison": ""
   ")": ""
   "Seperator": ""
-  "Statement": ""
+  "Statement": "",
+  "Priority": "1"
 }
 emptyGroup = {
   "GroupId": "new_row"
@@ -120,6 +121,7 @@ class Condition
     @seperator = ko.observable params['Seperator'] || ""
     @Seperator = params['Seperator'] || ""
     @Statement = @getStatement()
+    @Priority = params['Priority']
      
   setStartParen: (parens) ->
     @startParen parens
@@ -357,6 +359,7 @@ class App
     
 
   selectGroup: (ID) =>
+    @selectedGroup = ID
     $.ajax
       url: ACT_DATA_URL
       data:
@@ -378,6 +381,21 @@ class App
       ko.mapping.fromJS(selectedItem, @selectedCondition)
     true
     
+  saveCondition: ->
+    $.ajax
+      url: ACT_DATA_URL
+      data:
+        action: "SaveCondition"
+        groupid: @selectedGroup
+        where: "[" + @conditions().join(",") + "]"
+      type: 'GET'
+      dataType: 'jsonp'
+      jsonp: 'callback',
+      success: (data) =>
+        for condition,index in @conditions()
+          @conditions.id = data.ConditionIDs[index]
+        @previewRecords()
+          
   previewRecords: ->
     if @conditions().length > 0
       @loadingOverlay.toggle()
@@ -397,14 +415,15 @@ class App
       
     
   validateSeperator: =>
-    if (@getConditions()()[@getConditions()().length - 1] isnt @selectedCondition and @selectedCondition.Seperator is "")
+    if (@getConditions()().length > 0 and @getConditions()()[@getConditions()().length - 1] isnt @selectedCondition and @selectedCondition.Seperator is "")
       [false, "You must use a seperator for your criteria, AND/OR"]
     else
       [true, ""]  
     
   validateStatement: =>
     try
-      SQLParser.parse "SELECT * FROM Contacts WHERE " + ( @conditions().map (o) -> o.getStatement() ).join("")
+      if @conditions().length > 0
+        SQLParser.parse "SELECT * FROM Contacts WHERE " + ( @conditions().map (o) -> o.getStatement() ).join("")
       [true, ""]
     catch error
       [false, "Criteria is wrong: " + error.toString().split(":")[2]]
@@ -419,7 +438,7 @@ class App
       [true, ""]     
   
   contactsGridHeight: ->
-    height = $(window).height() - $('#gbox_conditionsGrid').height() - 107
+    height = $(window).height() - $('#gbox_conditionsGrid').height() - 105
     $("#contactsGrid").jqGrid("setGridHeight", height ) 
     height
   

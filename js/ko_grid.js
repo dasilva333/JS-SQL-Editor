@@ -20,7 +20,6 @@
 				width: value.width,
 				hiddengrid: value.hiddengrid, //sets the grid to be hidden initially
 				pager: value.pager,
-				//TODO Investigate virtual scrolling for groups
 				rowNum: value.rowNum,
 				onSelectRow: function (id) {
 					if (value.editor == true){
@@ -82,9 +81,9 @@
 						   aftersavefunc: function(){
 							   //var newItem = value.selectedItem; //this one should def work
 							   //var newItem = $(element).jqGrid('getLocalRow', "new_row"); //this one only gets the basic values
-							   var newItem = Main.selectedCondition; //fix this so it doesn't reference Main directly
-							   newItem.ID = dataArr.length + 1; 
-							   value.data.unshift(newItem);
+							   //var newItem = Main.selectedCondition; //fix this so it doesn't reference Main directly
+							  //newItem.ID = dataArr.length + 1; 
+							   value.data.unshift(Main.selectedCondition);
 							   lastsel = null;
 							   Main.selectedCondition = null;
 						   }
@@ -95,6 +94,14 @@
 					   buttonicon:"ui-icon-search", 
 					   onClickButton: function(){ 
 						   Main.previewRecords()
+					   }, 
+					   position:"last"
+					})
+					.jqGrid('navButtonAdd',value.pager, {
+					   caption:"Save", 
+					   buttonicon:"ui-icon-search", 
+					   onClickButton: function(){ 
+						   Main.saveCondition()
 					   }, 
 					   position:"last"
 					})

@@ -73,7 +73,7 @@
 									rowNum: 10,
 									height: conditionsGridHeight,
 									resizeHeight: contactsGridHeight,
-									width: 950,
+									width: 750,
 									hiddengrid: true,
 									pager: '#conditionPager',
 									colModel: [
@@ -136,7 +136,7 @@
 													custom_func: validateSeperator
 												}
 										},
-										{ name: 'Statement', index: 'Statement', width: 400, editable: true, edittype: 'custom', 
+										{ name: 'Statement', index: 'Statement', width: 400, editable: true, hidden:true, edittype: 'custom', 
 											editoptions: { 
 												custom_element: selectedCondition.statementTemplate, 
 												custom_value: selectedCondition.getStatement
@@ -164,7 +164,7 @@
 									colModel: contactsModel,
 									editor: false,
 									pager: '#contactsPager',
-									width: 950,
+									width: 750,
 									height: contactsGridHeight,
 									rowNum: 5
 						        }">
