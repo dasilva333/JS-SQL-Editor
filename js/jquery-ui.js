@@ -7811,7 +7811,7 @@ $.extend(Datepicker.prototype, {
 				case 13: var sel = $('td.' + $.datepicker._dayOverClass + ':not(.' + 
 									$.datepicker._currentClass + ')', inst.dpDiv);
 						if (sel[0])
-							$.datepicker._selectDay(event.target, inst.selectedMonth, inst.selectedYear, sel[0]);
+							//$.datepicker._selectDay(event.target, inst.selectedMonth, inst.selectedYear, sel[0]);
 							var onSelect = $.datepicker._get(inst, 'onSelect');
 							if (onSelect) {
 								var dateStr = $.datepicker._formatDate(inst);

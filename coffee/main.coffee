@@ -83,7 +83,7 @@ operatorDefinitions =
     "Greater Than or Equal To": -> " => " + @getComparison()()
     "Less Than or Equal To": -> " =< " + @getComparison()()
 
-window.emptyCondition = {
+emptyCondition = 
   "ID": "new_row"
   "(": ""
   "Column": ""
@@ -93,12 +93,12 @@ window.emptyCondition = {
   "Seperator": ""
   "Statement": "",
   "Priority": "1"
-}
-emptyGroup = {
+
+emptyGroup = 
   "GroupId": "new_row"
   "Name": ""
   "Description": ""
-}
+
     
 String::singleQuoted = ->
   "'#{ this }'"
@@ -224,12 +224,14 @@ class Condition
     @presetComparison
   
   comparisonTemplate: (value, options) -> 
-    ##setTimeout(->
-    ##  $("input[name=Comparison]").datepicker
-    ##      constrainInput: false
-    ##      showAnim: ->
-    ##        if (Main.selectedCondition.getDataType() isnt "CF_SQL_TIMESTAMP") then 'hide' else 'show'
-    ##,50)     
+    setTimeout(->
+      $("input[name=Comparison]").click(->
+          $(this).focus()
+        ).datepicker
+          constrainInput: false
+          showAnim: ->
+            if (Main.selectedCondition.getDataType() isnt "CF_SQL_TIMESTAMP") then 'hide' else 'show'
+    ,50)     
     '<input class="datePicker" size="11" type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()"><select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select>'
 
   showPresetComparisons: ->
@@ -273,6 +275,7 @@ class Condition
       Seperator: @Seperator
       type: @getDataType()
 
+window.Condition = Condition;
 
 class Column
 
@@ -283,6 +286,14 @@ class Column
     @index = params.name
     @name = params.name
     @hidden = index is -1
+  
+    if (@name is "ACT_ID")
+      @formatter = 'showlink'
+      @formatoptions = 
+        baseLinkUrl:'ViewProfile.cfm'
+        addParam: '&action=view'
+        idName:'ACT_ID'
+      @fixed = true
   
   getViewName: ->
     @viewName
@@ -340,7 +351,7 @@ class App
         ko.applyBindings @, $("#" + @selectedCondition.ID, "#conditionsGrid").parent().get 0
       ,250)
     else
-      false
+      true
   
   afterInsertRow: =>
     setTimeout( =>
@@ -394,6 +405,11 @@ class App
       success: (data) =>
         for condition,index in @conditions()
           condition.ID = data.ConditionIDs[index]
+        $("#conditionsGrid").jqGrid("setGridParam", {
+          data: ko.utils.unwrapObservable(@conditions).slice(0)
+        }).trigger('reloadGrid', [{
+          page: 1
+        }])
         @previewRecords()
           
   previewRecords: ->

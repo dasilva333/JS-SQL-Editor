@@ -62,7 +62,7 @@
 					<table border="0" cellpadding="2" cellspacing="0" width="100%">                    
                     	<tr>      
                     		<td>              
-								<table id="conditionsGrid" data-bind="grid: { 
+								<table id="conditionsGrid" data-bind="sortableList: conditions, grid: { 
 									data: conditions,
 									selectItem: selectCondition,
 									selectedItem: selectedCondition,
@@ -110,7 +110,7 @@
 												required: true
 											}  
 										},
-										{ name: 'Comparison', index: 'Comparison', width: 200, editable: true, edittype: 'custom', datefmt: 'mm/dd/yyyy',
+										{ name: 'Comparison', index: 'Comparison', width: 200, editable: true, edittype: 'custom',
 											editoptions: { 
 												custom_element: selectedCondition.comparisonTemplate, 
 												custom_value: selectedCondition.getComparison
@@ -156,7 +156,7 @@
                     		</td>                    
                     	</tr> 
                     	<tr>                    
-                    		<td>
+                    		<td width="750">
 			                   <table id="contactsGrid" data-bind="grid: { 
 									data: contacts,
 									caption: 'Contacts Result',
@@ -166,7 +166,7 @@
 									pager: '#contactsPager',
 									width: 750,
 									height: contactsGridHeight,
-									rowNum: 5
+									rowNum: 20
 						        }">
 						    	</table> 
 						    	<div id="contactsPager"></div>	 		

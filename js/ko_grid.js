@@ -1,7 +1,11 @@
-
+	var gridLoaded = {}
 	var lastsel;  
 	ko.bindingHandlers.grid = {
 		init: function (element, valueAccessor) {
+			if (!gridLoaded[element.id])
+				gridLoaded[element.id] = true;
+			else
+				return
 			var value = valueAccessor();
 			var dataArr = ko.utils.unwrapObservable(value.data).slice(0);
 			var grid = $(element).jqGrid({
@@ -15,6 +19,7 @@
 				height: value.height(),
 				onHeaderClick: value.resizeHeight,
 				hoverrows: false,
+				forceFit: true,
 				colModel: value.colModel,
 				cmTemplate: { align: "center" }, //sets default property for the colModel 
 				width: value.width,
@@ -53,7 +58,9 @@
 				rowList: [],        // disable page size dropdown
 			    pgbuttons: !value.editor,     // disable page control like next, back button
 			    pgtext: null,         // disable pager text like 'Page 0 of 10'
-			    viewrecords: !value.editor    // disable current view record text like 'View 1-10 of 100' 
+			    viewrecords: !value.editor,    // disable current view record text like 'View 1-10 of 100' 
+			    sortname: 'id',
+			    sortorder: "desc"
 			})
 			.jqGrid("setGridParam", {
 				data: ko.utils.unwrapObservable(value.data).slice(0)
@@ -104,6 +111,27 @@
 						   Main.saveCondition()
 					   }, 
 					   position:"last"
+					})
+					.jqGrid('sortableRows', {
+						update: function(event, ui){
+							
+							var list = value.data;
+
+							//retrieve our actual data item
+							var item = $(element).getRowData( ui.item.get(0).id );
+							
+							//figure out its new position
+							var position = ko.utils.arrayIndexOf(ui.item.parent().children(), ui.item[0]) - 1;
+							
+							console.log(position)
+							//remove the item and add it back in the right spot
+							if (position > -1) {
+								list.remove(function(o){
+									return item.ID == o.ID;
+								});
+								list.splice(position, 0, new Condition(item) );
+							}
+						}
 					})
 				}
 				else {	

@@ -1,6 +1,6 @@
 (function() {
-  var App, Column, Condition, Group, columnTypes, defaultColumns, emptyGroup, operatorDefinitions, savedColumns;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var App, Column, Condition, Group, columnTypes, defaultColumns, emptyCondition, emptyGroup, operatorDefinitions, savedColumns,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
 
@@ -153,7 +153,7 @@
     }
   };
 
-  window.emptyCondition = {
+  emptyCondition = {
     "ID": "new_row",
     "(": "",
     "Column": "",
@@ -341,6 +341,20 @@
     };
 
     Condition.prototype.comparisonTemplate = function(value, options) {
+      setTimeout(function() {
+        return $("input[name=Comparison]").click(function() {
+          return $(this).focus();
+        }).datepicker({
+          constrainInput: false,
+          showAnim: function() {
+            if (Main.selectedCondition.getDataType() !== "CF_SQL_TIMESTAMP") {
+              return 'hide';
+            } else {
+              return 'show';
+            }
+          }
+        });
+      }, 50);
       return '<input class="datePicker" size="11" type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()"><select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select>';
     };
 
@@ -409,6 +423,8 @@
 
   })();
 
+  window.Condition = Condition;
+
   Column = (function() {
 
     function Column(id, params, index) {
@@ -418,6 +434,15 @@
       this.index = params.name;
       this.name = params.name;
       this.hidden = index === -1;
+      if (this.name === "ACT_ID") {
+        this.formatter = 'showlink';
+        this.formatoptions = {
+          baseLinkUrl: 'ViewProfile.cfm',
+          addParam: '&action=view',
+          idName: 'ACT_ID'
+        };
+        this.fixed = true;
+      }
     }
 
     Column.prototype.getViewName = function() {
@@ -532,7 +557,7 @@
           return ko.applyBindings(_this, $("#" + _this.selectedCondition.ID, "#conditionsGrid").parent().get(0));
         }, 250);
       } else {
-        return false;
+        return true;
       }
     };
 
@@ -607,6 +632,13 @@
             condition = _ref[index];
             condition.ID = data.ConditionIDs[index];
           }
+          $("#conditionsGrid").jqGrid("setGridParam", {
+            data: ko.utils.unwrapObservable(_this.conditions).slice(0)
+          }).trigger('reloadGrid', [
+            {
+              page: 1
+            }
+          ]);
           return _this.previewRecords();
         }
       });
