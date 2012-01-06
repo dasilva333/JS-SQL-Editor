@@ -19,7 +19,8 @@
 				height: value.height(),
 				onHeaderClick: value.resizeHeight,
 				hoverrows: false,
-				forceFit: true,
+				forceFit: false,
+				shrinkToFit: false,
 				colModel: value.colModel,
 				cmTemplate: { align: "center" }, //sets default property for the colModel 
 				width: value.width,
@@ -51,14 +52,14 @@
 				}, 
 				gridComplete: value.gridComplete,
 				onCellSelect: value.onCellSelect,
-				afterInsertRow: value.afterInsertRow,
+				//afterInsertRow: value.afterInsertRow,
 				editurl: "clientArray",
 				caption: value.caption,
 				//disable paging
-				rowList: [],        // disable page size dropdown
-			    pgbuttons: !value.editor,     // disable page control like next, back button
-			    pgtext: null,         // disable pager text like 'Page 0 of 10'
-			    viewrecords: !value.editor,    // disable current view record text like 'View 1-10 of 100' 
+				rowList: [],        			// disable page size dropdown
+			    pgbuttons: !value.editor,     	// disable page control like next, back button
+			    pgtext: null,         			// disable pager text like 'Page 0 of 10'
+			    viewrecords: !value.editor,    	// disable current view record text like 'View 1-10 of 100' 
 			    sortname: 'id',
 			    sortorder: "desc"
 			})
@@ -143,11 +144,13 @@
 								done : function (perm) {   
 									if (perm) {
 										var defaultColumns = []
-										this.jqGrid("getGridParam","colModel").map(function(col){
+										$.map(this.jqGrid("getGridParam","colModel"), function(col){
 											if (!col.hidden)
 												defaultColumns.push(col.id);
 										})
+										savedColumns = defaultColumns;
 										$.jStorage.set(COLUMN_KEY_NAMES, defaultColumns);
+										Main.previewRecords()
 									}
 								}
 							}); 

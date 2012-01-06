@@ -1,5 +1,5 @@
 (function() {
-  var App, Column, Condition, Group, columnTypes, defaultColumns, emptyCondition, emptyGroup, operatorDefinitions, savedColumns,
+  var App, Column, Condition, Group, columnTypes, defaultColumns, emptyCondition, emptyGroup, operatorDefinitions,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   window.defaultCaption = "--Select--";
@@ -14,7 +14,7 @@
 
   defaultColumns = ["93", "3", "5"];
 
-  savedColumns = $.jStorage.get(COLUMN_KEY_NAMES, defaultColumns);
+  window.savedColumns = $.jStorage.get(COLUMN_KEY_NAMES, defaultColumns);
 
   window.sortByAlpha = function(toSort) {
     var reA, reN;
@@ -652,18 +652,20 @@
           url: ACT_DATA_URL,
           data: {
             action: "GetContactsByQuery",
+            select: JSON.stringify(savedColumns),
             where: "[" + this.conditions().join(",") + "]"
           },
           type: 'GET',
           dataType: 'jsonp',
           jsonp: 'callback',
           success: function(data) {
-            var contact, _i, _len;
-            _this.contacts.removeAll();
-            for (_i = 0, _len = data.length; _i < _len; _i++) {
-              contact = data[_i];
-              _this.contacts.push(contact);
-            }
+            $("#contactsGrid").jqGrid('clearGridData').jqGrid('setGridParam', {
+              data: data
+            }).trigger('reloadGrid', [
+              {
+                page: 1
+              }
+            ]);
             return _this.loadingOverlay.toggle();
           }
         });

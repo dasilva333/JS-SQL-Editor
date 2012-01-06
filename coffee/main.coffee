@@ -3,10 +3,8 @@ window.COLUMN_KEY_NAMES = "defaultColumns"
 window.allColumns = []
 window.allGroups = []
 window.ACT_DATA_URL = if (typeof private_URL != "undefined") then private_URL else "/act/ACT_Schema.cfm"  
-    
-defaultColumns = ["93","3","5"] ##ACT_ID, FirstName, LastName  
-savedColumns = $.jStorage.get(COLUMN_KEY_NAMES, defaultColumns)
-
+defaultColumns = ["93","3","5"] ##ACT_ID, FirstName, LastName 
+window.savedColumns = $.jStorage.get(COLUMN_KEY_NAMES, defaultColumns)
 window.sortByAlpha = (toSort) ->
   reA = /[^a-zA-Z]/g
   reN = /[^0-9]/g
@@ -231,7 +229,7 @@ class Condition
           constrainInput: false
           showAnim: ->
             if (Main.selectedCondition.getDataType() isnt "CF_SQL_TIMESTAMP") then 'hide' else 'show'
-    ,50)     
+    ,50)
     '<input class="datePicker" size="11" type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()"><select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select>'
 
   showPresetComparisons: ->
@@ -419,14 +417,17 @@ class App
         url: ACT_DATA_URL
         data:
           action: "GetContactsByQuery"
+          select: JSON.stringify(savedColumns)
           where: "[" + @conditions().join(",") + "]"
         type: 'GET'
         dataType: 'jsonp'
         jsonp: 'callback',
         success: (data) =>
-          @contacts.removeAll()
-          for contact in data
-            @contacts.push contact
+          $("#contactsGrid").jqGrid('clearGridData').jqGrid('setGridParam', {
+            data: data
+          }).trigger('reloadGrid', [{
+            page: 1
+          }])
           @loadingOverlay.toggle()  
       
     
