@@ -90,6 +90,12 @@
     }
   };
 
+  columnTypes = {
+    CF_SQL_FLOAT: columnTypes.CF_SQL_INTEGER
+  };
+
+  console.log(columnTypes);
+
   operatorDefinitions = {
     "Contains Data": function() {
       return " != '' OR " + this.getColumnName()() + " IS NOT NULL  ";
@@ -694,15 +700,7 @@
     };
 
     App.prototype.validateParens = function() {
-      var blank, end, start;
-      start = Main.selectedCondition.getStartParen()();
-      end = Main.selectedCondition.getEndParen()();
-      blank = "";
-      if ((start === blank && end !== blank) || (start !== blank && end === blank)) {
-        return [false, "Parenthesis aren't both set"];
-      } else {
-        return [true, ""];
-      }
+      return [true, ""];
     };
 
     App.prototype.contactsGridHeight = function() {

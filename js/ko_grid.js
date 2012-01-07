@@ -124,7 +124,6 @@
 							//figure out its new position
 							var position = ko.utils.arrayIndexOf(ui.item.parent().children(), ui.item[0]) - 1;
 							
-							console.log(position)
 							//remove the item and add it back in the right spot
 							if (position > -1) {
 								list.remove(function(o){

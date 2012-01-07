@@ -58,7 +58,9 @@ columnTypes =
     "Years Equals [number]": [""]
   CF_SQL_BIT: 
     "Equal To": ["True", "False"]
-
+    
+columnTypes.CF_SQL_FLOAT: columnTypes.CF_SQL_INTEGER
+ 
 operatorDefinitions = 
     "Contains Data": -> " != '' OR " + @getColumnName()() + " IS NOT NULL  "
     "Days Equal": -> " DAY( " + @getColumnName()() + " ) = "
@@ -184,7 +186,7 @@ class Condition
       o.name is "Comparison"
     )[0].editrules = {
       required: false
-      number: (@getDataType() is "CF_SQL_INTEGER")
+      number: (@getDataType() is "CF_SQL_INTEGER" or @getDataType() is "CF_SQL_FLOAT")
       date: (@getDataType() is "CF_SQL_TIMESTAMP")
     }
     if operation is 'get'
@@ -446,13 +448,7 @@ class App
       [false, "Criteria is wrong: " + error.toString().split(":")[2]]
  
   validateParens: =>
-    start = Main.selectedCondition.getStartParen()()
-    end = Main.selectedCondition.getEndParen()()
-    blank = ""
-    if ((start is blank and end isnt blank) or (start isnt blank and end is blank))
-      [false, "Parenthesis aren't both set"]
-    else
-      [true, ""]     
+    [true, ""]
   
   contactsGridHeight: ->
     height = $(window).height() - $('#gbox_conditionsGrid').height() - 105
