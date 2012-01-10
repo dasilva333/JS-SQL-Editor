@@ -1,6 +1,7 @@
 (function() {
-  var App, Column, Condition, Group, columnTypes, defaultColumns, emptyCondition, emptyGroup, operatorDefinitions,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var App, Column, Condition, Group, columnTypes, datePickerFields, defaultColumns, emptyCondition, emptyGroup, operatorDefinitions,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __indexOf = Array.prototype.indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   window.defaultCaption = "--Select--";
 
@@ -73,11 +74,11 @@
     CF_SQL_TIMESTAMP: {
       "After Next [Days]": [""],
       "Contains Data": [],
-      "Days Equal": [""],
+      "Days Equal [number]": [""],
       "Does Not Contain Data": [],
       "Equal To": ["", "Today"],
       "Months Equals [number]": [""],
-      "Not Equal To": [""],
+      "Not Equal To": ["", "Today"],
       "Older than [days]": [""],
       "On or After": ["", "Today"],
       "On or Before": ["", "Today"],
@@ -90,17 +91,13 @@
     }
   };
 
-  columnTypes = {
-    CF_SQL_FLOAT: columnTypes.CF_SQL_INTEGER
-  };
-
-  console.log(columnTypes);
+  columnTypes.CF_SQL_FLOAT = columnTypes.CF_SQL_INTEGER;
 
   operatorDefinitions = {
     "Contains Data": function() {
       return " != '' OR " + this.getColumnName()() + " IS NOT NULL  ";
     },
-    "Days Equal": function() {
+    "Days Equal [number]": function() {
       return " DAY( " + this.getColumnName()() + " ) = ";
     },
     "Does Not Contain Data": function() {
@@ -112,25 +109,25 @@
     "Not Equal To": function() {
       return " != " + this.getFormattedComparison();
     },
-    "*After Next [Days]": function() {
+    "After Next [Days]": function() {
       return " DateAdd(d," + this.getComparison()() + "," + this.getColumnName()() + " ) > GetDate";
     },
-    "*Months Equals [number]": function() {
+    "Months Equals [number]": function() {
       return " MONTH( " + this.getColumnName()() + " ) = ";
     },
-    "*Older than [days]": function() {
+    "Older than [days]": function() {
       return "";
     },
-    "*On or After": function() {
+    "On or After": function() {
       return "";
     },
-    "*On or Before": function() {
+    "On or Before": function() {
       return "";
     },
-    "*Within Last [days]": function() {
+    "Within Last [days]": function() {
       return "";
     },
-    "*Within Next [days]": function() {
+    "Within Next [days]": function() {
       return "";
     },
     "Years Equals [number]": function() {
@@ -159,6 +156,8 @@
     }
   };
 
+  datePickerFields = ["Equal To", "On or After", "On or Before", "Not Equal To"];
+
   emptyCondition = {
     "ID": "new_row",
     "(": "",
@@ -186,6 +185,7 @@
     function Condition(params) {
       this.toString = __bind(this.toString, this);
       this.getOpAndComp = __bind(this.getOpAndComp, this);
+      this.comparisonTemplate = __bind(this.comparisonTemplate, this);
       this.getComparison = __bind(this.getComparison, this);
       this.operatorTemplate = __bind(this.operatorTemplate, this);
       this.getColumnID = __bind(this.getColumnID, this);
@@ -298,7 +298,7 @@
         return o.name === "Comparison";
       })[0].editrules = {
         required: false,
-        number: this.getDataType() === "CF_SQL_INTEGER",
+        number: this.getDataType() === "CF_SQL_INTEGER" || this.getDataType() === "CF_SQL_FLOAT",
         date: this.getDataType() === "CF_SQL_TIMESTAMP"
       };
       if (operation === 'get') {
@@ -353,10 +353,10 @@
         }).datepicker({
           constrainInput: false,
           showAnim: function() {
-            if (Main.selectedCondition.getDataType() !== "CF_SQL_TIMESTAMP") {
-              return 'hide';
-            } else {
+            if (Main.selectedCondition.showDatePicker()) {
               return 'show';
+            } else {
+              return 'hide';
             }
           }
         });
@@ -370,6 +370,11 @@
 
     Condition.prototype.showCustomComparisons = function() {
       return this.getComparisons().indexOf("") > -1;
+    };
+
+    Condition.prototype.showDatePicker = function() {
+      var _ref;
+      return this.getDataType() === "CF_SQL_TIMESTAMP" && (_ref = this.getOperator()(), __indexOf.call(datePickerFields, _ref) >= 0);
     };
 
     Condition.prototype.getEndParen = function() {
@@ -399,7 +404,7 @@
     };
 
     Condition.prototype.statementTemplate = function() {
-      return '<span data-bind="text: selectedCondition.getStatement()"></span><input type="hidden" data-bind="value: selectedCondition.getStatement()">';
+      return '<span data-bind="text: selectedCondition.getStatement"></span><input type="hidden" data-bind="value: selectedCondition.getStatement">';
     };
 
     Condition.prototype.getStatement = function(elem, op, value) {

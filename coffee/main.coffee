@@ -45,11 +45,11 @@ columnTypes =
   CF_SQL_TIMESTAMP:  
     "After Next [Days]" : [""]
     "Contains Data": []
-    "Days Equal": [""]
+    "Days Equal [number]": [""]
     "Does Not Contain Data": []
     "Equal To": ["","Today"]
     "Months Equals [number]": [""]
-    "Not Equal To": [""]
+    "Not Equal To": ["","Today"]
     "Older than [days]": [""]
     "On or After": ["","Today"]
     "On or Before": ["","Today"]
@@ -59,21 +59,24 @@ columnTypes =
   CF_SQL_BIT: 
     "Equal To": ["True", "False"]
     
-columnTypes.CF_SQL_FLOAT: columnTypes.CF_SQL_INTEGER
- 
+columnTypes.CF_SQL_FLOAT = columnTypes.CF_SQL_INTEGER
+
+##Not really used right now other than for debugging purposes to generate the statement property which would eventually get rebuilt in CF
+##the point of this is to validate the statement against the SQLParser in JS to prevent saving invalid statements
+##will need to dumb down some of this syntax for the SQL parser to be able to accept it 
 operatorDefinitions = 
     "Contains Data": -> " != '' OR " + @getColumnName()() + " IS NOT NULL  "
-    "Days Equal": -> " DAY( " + @getColumnName()() + " ) = "
+    "Days Equal [number]": -> " DAY( " + @getColumnName()() + " ) = "
     "Does Not Contain Data": -> " = ''  OR " + @getColumnName()() + " IS NULL "
     "Equal To": -> " = " + @getFormattedComparison()
     "Not Equal To": -> " != " + @getFormattedComparison()
-    "*After Next [Days]": -> " DateAdd(d," + @getComparison()() + "," + @getColumnName()() + " ) > GetDate"
-    "*Months Equals [number]": -> " MONTH( " + @getColumnName()() + " ) = "
-    "*Older than [days]": -> ""
-    "*On or After": -> ""
-    "*On or Before": -> ""
-    "*Within Last [days]": -> ""
-    "*Within Next [days]": -> ""
+    "After Next [Days]": -> " DateAdd(d," + @getComparison()() + "," + @getColumnName()() + " ) > GetDate"
+    "Months Equals [number]": -> " MONTH( " + @getColumnName()() + " ) = "
+    "Older than [days]": -> ""
+    "On or After": -> ""
+    "On or Before": -> ""
+    "Within Last [days]": -> ""
+    "Within Next [days]": -> ""
     "Years Equals [number]": -> " YEAR( " + @getColumnName()() + " ) = YEAR( " + @getComparison()() + " )"
     "Starts With": -> " LIKE '" + @getComparison()() + "%' "
     "Contains": -> " LIKE '%" + @getComparison()() + "%' "
@@ -82,6 +85,15 @@ operatorDefinitions =
     "Less Than": -> " < " + @getComparison()()
     "Greater Than or Equal To": -> " => " + @getComparison()()
     "Less Than or Equal To": -> " =< " + @getComparison()()
+    
+##TODO after writing this i realized i can ceck the arraylength of CF_SQL_TIMESTAMP to be the length of 2
+datePickerFields = [
+  "Equal To"
+  "On or After"
+  "On or Before"
+  "Not Equal To"
+] 
+  
 
 emptyCondition = 
   "ID": "new_row"
@@ -220,17 +232,18 @@ class Condition
     if @getDataType() is "CF_SQL_BIT"
       @setComparison @presetComparison()
     else if @getDataType() is "CF_SQL_TIMESTAMP" and @presetComparison() isnt ""
-      @setComparison @presetComparison() ##Once I figure out the parser bug I'll set it to @Today
+      @setComparison @presetComparison()
     @presetComparison
   
-  comparisonTemplate: (value, options) -> 
+  comparisonTemplate: (value, options) => 
     setTimeout(->
       $("input[name=Comparison]").click(->
           $(this).focus()
         ).datepicker
           constrainInput: false
           showAnim: ->
-            if (Main.selectedCondition.getDataType() isnt "CF_SQL_TIMESTAMP") then 'hide' else 'show'
+            ##TODO figure out how to call this from here
+            if (Main.selectedCondition.showDatePicker()) then 'show' else 'hide'
     ,50)
     '<input class="datePicker" size="11" type="text" data-bind="value: selectedCondition.getComparison(), valueUpdate: \'keyup\', visible: selectedCondition.showCustomComparisons()"><select data-bind="value: selectedCondition.getPresetComparison(), options: selectedCondition.getComparisons(), optionsText: function(item){ return item == \'\' ? \'Custom\' : item }, disable: !selectedCondition.showPresetComparisons()"></select>'
 
@@ -239,6 +252,9 @@ class Condition
   
   showCustomComparisons: ->
     @getComparisons().indexOf("") > -1
+  
+  showDatePicker: ->
+    @getDataType() is "CF_SQL_TIMESTAMP" and @getOperator()() in datePickerFields     
     
   getEndParen: ->
     this[')'] = @endParen()
@@ -255,7 +271,7 @@ class Condition
     if (@operator() is "" or typeof @operator() is "undefined") then "" else operatorDefinitions[@getOperator()()].apply(@)
 
   statementTemplate: ->
-    '<span data-bind="text: selectedCondition.getStatement()"></span><input type="hidden" data-bind="value: selectedCondition.getStatement()">'  
+    '<span data-bind="text: selectedCondition.getStatement"></span><input type="hidden" data-bind="value: selectedCondition.getStatement">'  
   
   getStatement: (elem, op, value) ->
     operation = op || ""
